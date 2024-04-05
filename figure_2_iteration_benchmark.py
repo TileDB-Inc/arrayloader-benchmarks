@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Literal, Protocol, Type
 import rich_click as click
 import lamindb as ln
@@ -37,9 +36,6 @@ def index_iter(n_obs, batch_size, shuffle=True):
         # progress_bar.update(1)
         yield indices[i : min(i + batch_size, n_obs)]
     # progress_bar.close()
-
-
-BATCH_SIZE = 128
 
 
 class Interface(Protocol):
