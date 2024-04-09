@@ -30,21 +30,21 @@ Slowest 10% of batches' share of total latency:
 
 ### Merlin
 Batch times (colored by [batch index] mod 10):
-[![](merlin_batches_mod10.png)](merlin_batches_mod10.png)
+[![](img/merlin_batches_mod10.png)](img/merlin_batches_mod10.png)
 
 - In most epochs, every 10th run was ≈3x slower than average
 - First epoch was more stable around the overall average, but `1mod10`s were often much *faster*.
 
 <details><summary>Detail: every 10th batch slow</summary>
 
-![](merlin_batches_mod10_1200:1800.png)
+[![](img/merlin_batches_mod10_1200:1800.png)](img/merlin_batches_mod10_1200:1800.png)
 
 The first epoch exhibited different "every 10th batch" periodicity.
 </details>
 
 ### Census
 Batch times (colored by [batch index] mod 10):
-[![](census_batches_mod10.png)](census_batches_mod10.png)
+[![](img/census_batches_mod10.png)](img/census_batches_mod10.png)
 
 Worst 10% of batches were ≈30-40x slower than average
 
@@ -52,18 +52,18 @@ Detail below shows "30x slower" batches repeated roughly every 10, but slipped b
 
 <details><summary>Example slow-batch-gap pattern: 10, 10, 10, 10, 9</summary>
 
-![](census_batches_mod10_1200:1800.png)
+[![](img/census_batches_mod10_1200:1800.png)](img/census_batches_mod10_1200:1800.png)
 </details>
 
 ### MappedCollection
 Batch times (colored by [batch index] mod **7**):
-[![](mappedcollection_batches_mod7.png)](mappedcollection_batches_mod7.png)
+[![](img/mappedcollection_batches_mod7.png)](img/mappedcollection_batches_mod7.png)
 
 MappedCollection had slow batches every 7 (as opposed to every 10 for the other two methods).
 
 <details><summary>Detail: batch times repeating every 7</summary>
 
-![](mappedcollection_batches_mod7_1200:1800.png)
+[![](img/mappedcollection_batches_mod7_1200:1800.png)](img/mappedcollection_batches_mod7_1200:1800.png)
 </details>
 
 [laminlabs/arrayloader-benchmarks]: https://github.com/laminlabs/arrayloader-benchmarks
