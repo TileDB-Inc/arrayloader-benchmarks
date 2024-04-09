@@ -1,13 +1,8 @@
 # `arrayloader-benchmarks`
 
-Fork of [laminlabs/arrayloader-benchmarks]:
-> Contains benchmarking scripts accompanying the blog post: [lamin.ai/blog/arrayloader-benchmarks](https://lamin.ai/blog/arrayloader-benchmarks)
->
-> See
-[lamin.ai/laminlabs/arrayloader-benchmarks](https://lamin.ai/laminlabs/arrayloader-benchmarks)
-for artifacts, benchmarking runs, and additional notebooks.
+This fork of [laminlabs/arrayloader-benchmarks] adds [fig-1-batch-times.ipynb](fig-1-batch-times.ipynb), which examines batch timings from "[A large-scale benchmark]" / [Plot Figure 1.ipynb](Plot%20Figure%201.ipynb).
 
-Adds [fig-1-batch-times.ipynb](fig-1-batch-times.ipynb), which examines batch timings from "[A large-scale benchmark]" / [Plot Figure 1.ipynb](Plot%20Figure%201.ipynb). In particular:
+In particular:
 - Every ≈10th Census batch took ≈30x the average, accounting for ≈80% of total latency.
 - Merlin had 3x slower batches every 10, with an even more rigid pattern.
 - MappedCollection batch times tended to repeat every 7 batches, with slower batches often 40-50x slower than average.
