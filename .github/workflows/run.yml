@@ -1,32 +1,22 @@
-name: Trial run
-
+name: Run "figure 2" benchmark
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  repository_dispatch:
-    types: [build]
-
+  workflow_dispatch:
 jobs:
-  test:
+  fig2:
+    name: Run "figure 2" benchmark
     runs-on: ubuntu-latest
     timeout-minutes: 60
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: figure_2_environment.yml
           init-shell: >-
             bash
           cache-environment: true
-
       - name: Set up a test instance to track run
         run: lamin init --storage ./testdb
         shell: bash -el {0}
-
       - name: Run benchmark
         run: python figure_2_iteration_benchmark.py --test
         shell: bash -el {0}
