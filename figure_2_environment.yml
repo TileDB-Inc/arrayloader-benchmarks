@@ -18,6 +18,8 @@ dependencies:
   - tensorstore
   - pip:
       - bionty
+      - dask[dataframe]
+      - distributed
       - plotly
       - rich-click
       - tiledbsoma==1.7.2
