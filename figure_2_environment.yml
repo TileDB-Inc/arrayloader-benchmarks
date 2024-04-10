@@ -18,6 +18,7 @@ dependencies:
   - tensorstore
   - pip:
       - bionty
+      - bokeh
       - dask[dataframe]
       - distributed
       - plotly
