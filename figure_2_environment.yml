@@ -1,6 +1,7 @@
 name: lamin
 channels:
   - conda-forge
+  - pytorch
 dependencies:
   - python=3.11
   - h5py
@@ -11,6 +12,7 @@ dependencies:
   - pip
   - polars
   - pyarrow
+  - pytorch
   - rich
   - s3fs
   - scanpy
