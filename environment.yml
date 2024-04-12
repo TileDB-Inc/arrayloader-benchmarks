@@ -7,6 +7,7 @@ channels:
   - pytorch
 dependencies:
   - python=3.11
+  - cudatoolkit==11.4.1
   - h5py
   - loguru
   - merlin-core
@@ -17,11 +18,10 @@ dependencies:
   - pip
   - polars
   - pyarrow
-  - pytorch
+  - pytorch>=2,<2.2
   - rich
   - s3fs
   - scanpy
-  - torchdata
   - zarr
   - tensorstore
   - pip:
@@ -30,6 +30,9 @@ dependencies:
       - cellxgene_census
       - dask[dataframe]
       - distributed
+      - kaleido
+      - lamindb
       - plotly
       - rich-click
       - tiledbsoma==1.7.2
+      - torchdata
