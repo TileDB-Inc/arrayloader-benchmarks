@@ -2,23 +2,24 @@ from dataclasses import dataclass, asdict, field
 import gc
 import json
 from math import log10
+import os
+from os.path import exists, join, splitext
+from shutil import rmtree
+from sys import stderr
 import time
 from tqdm import tqdm
 from typing import Literal, Protocol, Optional
 
+import pyarrow as pa
+import pandas as pd
+import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.graph_objs import Figure
 from plotly.subplots import make_subplots
-
-import plotly
 default_colors = plotly.colors.DEFAULT_PLOTLY_COLORS
 
-import pandas as pd
 from IPython.display import Image, Markdown
-
-from os.path import splitext, join
-from sys import stderr
 
 
 def err(*args):
