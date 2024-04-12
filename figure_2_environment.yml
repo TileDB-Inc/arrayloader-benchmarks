@@ -1,11 +1,16 @@
 name: lamin
 channels:
+  - nvidia
+  - rapidsai
+  - numba
   - conda-forge
   - pytorch
 dependencies:
   - python=3.11
   - h5py
   - loguru
+  - merlin-core
+  - merlin-dataloader
   - notebook
   - numpy
   - pandas
