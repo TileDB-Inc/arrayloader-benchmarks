@@ -36,6 +36,7 @@ for artifact in collection_h5ads.artifacts:
 
 BATCH_SIZE = 1024
 
+
 def benchmark(loader, n_samples = None):    
     loader_iter = loader.__iter__()
     # exclude first batch from benchmark as this includes the setup time
@@ -137,7 +138,8 @@ for epoch in range(5):
     
 census = cellxgene_census.open_soma()
 
-reference = ln.Collection.filter(uid="1gsdckxvOvIjQgeDVS1F").one().reference
+# reference = ln.Collection.filter(uid="1gsdckxvOvIjQgeDVS1F").one().reference
+reference = '283d65eb-dd53-496d-adb7-7570c7caa443'
 query_collection_id = f"collection_id == '{reference}'"
 datasets =(census["census_info"]["datasets"]
            .read(column_names=["dataset_id"], value_filter=query_collection_id)
