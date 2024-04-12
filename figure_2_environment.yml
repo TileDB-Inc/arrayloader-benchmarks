@@ -21,6 +21,7 @@ dependencies:
   - rich
   - s3fs
   - scanpy
+  - torchdata
   - zarr
   - tensorstore
   - pip:
