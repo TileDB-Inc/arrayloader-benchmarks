@@ -5,6 +5,7 @@ from math import log10
 import os
 from os.path import exists, join, splitext
 from shutil import rmtree
+from subprocess import check_call
 from sys import stderr
 import time
 from tqdm import tqdm
