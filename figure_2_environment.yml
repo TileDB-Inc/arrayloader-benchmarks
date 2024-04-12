@@ -27,6 +27,7 @@ dependencies:
   - pip:
       - bionty
       - bokeh
+      - cellxgene_census
       - dask[dataframe]
       - distributed
       - plotly
