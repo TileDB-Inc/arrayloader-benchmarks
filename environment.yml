@@ -32,6 +32,7 @@ dependencies:
       - distributed
       - kaleido
       - lamindb
+      - papermill
       - plotly
       - rich-click
       - tiledbsoma==1.7.2
