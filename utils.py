@@ -7,7 +7,7 @@ from os.path import exists, join, splitext
 from shutil import rmtree
 from subprocess import check_call
 from sys import stderr
-import time
+from time import time
 from tqdm import tqdm
 from typing import Literal, Protocol, Optional
 
