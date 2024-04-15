@@ -14,12 +14,6 @@ from sys import stderr
 from tempfile import TemporaryDirectory
 from time import time
 
-from tiledbsoma import (
-    tiledbsoma_stats_enable as stats_enable,
-    tiledbsoma_stats_disable as stats_disable,
-    tiledbsoma_stats_reset as stats_reset,
-    tiledbsoma_stats_dump as stats_dump,
-)
 from tqdm import tqdm
 from typing import Literal, Protocol, Optional
 
@@ -32,61 +26,10 @@ from plotly.graph_objs import Figure
 from plotly.subplots import make_subplots
 default_colors = plotly.colors.DEFAULT_PLOTLY_COLORS
 
+from err import err
+from stats import *
+
 from IPython.display import Image, Markdown
-
-
-def err(*args):
-    print(*args, file=stderr)
-
-
-@contextmanager
-def collect_stats(*args):
-    stats_reset()
-    stats_enable()
-    try:
-        yield
-    finally:
-        stats_disable()
-        if args:
-            cur_stats = get_stats()
-            n = len(args)
-            if n == 1:
-                arr = args[0]
-                arr.append(cur_stats)
-            elif n == 2:
-                name, obj = args
-                if 'name' in obj:
-                    raise ValueError(f'Name {name} already exists in stats obj')
-                obj[name] = cur_stats
-            else:
-                err(f"Unrecognized stats args (expected ``(Sequence,)`` or ``(str, dict)``): {args}")
-                return
-
-
-def stats_collector():
-    stats = {}
-
-    def collect(name):
-        return collect_stats(name, stats)
-
-    return stats, collect
-
-
-def get_stats(reset: bool = False):
-    with TemporaryDirectory() as tmp_dir:
-        tmp_path = join(tmp_dir, 'stats.txt')
-        with open(tmp_path, 'w') as f:
-            with redirect_stdout(f):
-                stats_dump()
-        with open(tmp_path, 'r') as f:
-            first, *lines = f.readlines()
-            first = first.rstrip('\n')
-            if not fullmatch(r'libtiledb=\d+\.\d+\.\d+', first):
-                raise RuntimeError(f"Unrecognized first line of tiledbsoma_stats_dump(): {first}")
-            stats = json.loads('\n'.join(lines))
-        if reset:
-            stats_reset()
-    return stats
 
 
 Fmt = Literal['png', 'md', 'fig']
