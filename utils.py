@@ -19,6 +19,7 @@ from sys import stderr
 from tempfile import TemporaryDirectory
 from time import time
 from typing import Literal, Protocol, Optional
+from urllib.parse import urlparse
 
 # 3rd party
 import numpy as np
@@ -67,3 +68,8 @@ def get_region():
     r.raise_for_status()
     az = r.text
     return az[:-1]
+
+
+def is_local(uri: str) -> bool:
+    scheme = urlparse(uri).scheme
+    return not scheme or scheme == 'file'
