@@ -1,6 +1,6 @@
 # `arrayloader-benchmarks`
 
-This fork of [laminlabs/arrayloader-benchmarks] adds [fig-1-batch-times.ipynb](fig-1-batch-times.ipynb), which examines batch timings from "[A large-scale benchmark]" / [Plot Figure 1.ipynb](Plot%20Figure%201.ipynb):
+This fork of [laminlabs/arrayloader-benchmarks] digs further into timings from "[A large-scale benchmark]" / [Plot Figure 1.ipynb](Plot%20Figure%201.ipynb):
 
 ![](fig1panel1.svg)
 
@@ -63,5 +63,36 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 [![](img/mappedcollection_batches_mod7_1200:1800.png)](img/mappedcollection_batches_mod7_1200:1800.png)
 </details>
 
+## Census timing vs. data locality
+
+See [benchmark.ipynb](benchmark.ipynb), and example runs:
+- [us-east-1.ipynb](benchmarkes/us-east-1.ipynb): read Census (us-west-2) from an instance in us-east-1
+- [us-west-2.ipynb](benchmarkes/us-west-2.ipynb): read Census (us-west-2) from an instance in us-west-2
+- [local-nvme.ipynb](benchmarkes/local-nvme.ipynb): read a local copy of Census from an NVMe drive
+- [subset-nvme.ipynb](benchmarkes/subset-nvme.ipynb): read a subset of Census from an NVMe drive
+- [subset-gp3.ipynb](benchmarkes/subset-gp3.ipynb): read a subset of Census from a gp3 EBS volume
+
+All 5 ran against the same 5 Census datasets (133790 cells), but the "subset" runs read an exported SOMA with just that data (≈714MiB vs. 593GiB); see [download-census-slice.ipynb](download-census-slice.ipynb). 
+
+Rough samples/sec numbers:
+```bash
+cd results; for f in *.json; do
+    echo -n "${f%.json}: "
+    jq -j '.census.epochs[0].samples_per_sec | floor' $f
+    echo ' samples/sec'
+done | column -t | sort -nk2
+# us-east-1:    879   samples/sec
+# us-west-2:    1393  samples/sec
+# local-nvme:   1819  samples/sec
+# subset-nvme:  2913  samples/sec
+# subset-gp3:   3036  samples/sec
+```
+
+Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-west-2.png):
+
+![](img/census-us-west-2.png)
+
 [laminlabs/arrayloader-benchmarks]: https://github.com/laminlabs/arrayloader-benchmarks
 [A large-scale benchmark]: https://lamin.ai/blog/arrayloader-benchmarks#a-large-scale-benchmark
+
+[a subset of Census]: download-census-slice.ipynb
