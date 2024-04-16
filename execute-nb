@@ -9,6 +9,7 @@ cmd=(
   papermill
   benchmark.ipynb
   -p name "$name"
+  -p progress_bar False
   "$@"
   "$out"
 )

@@ -45,6 +45,7 @@ def benchmark(
         batch_size: int = 1024,
         gc_freq: Optional[int] = None,
         exclude_first_batch: bool = True,
+        progress_bar: bool = True
 ) -> Epoch:
     n_samples = exp.datapipe.shape[0]
     loader_iter = exp.loader.__iter__()
@@ -55,10 +56,14 @@ def benchmark(
     num_iter = n_samples // batch_size if n_samples is not None else None
 
     batches = []
+    total = num_iter if num_iter is not None else len(loader_iter)
+    batch_iter = enumerate(loader_iter)
+    if progress_bar:
+        batch_iter = tqdm(batch_iter, total=total)
+
     start_time = batch_time = time()
 
-    total = num_iter if num_iter is not None else len(loader_iter)
-    for i, batch in tqdm(enumerate(loader_iter), total=total):
+    for i, batch in batch_iter:
         X = batch["x"] if isinstance(batch, dict) else batch[0]
         # for pytorch DataLoader
         # Merlin sends to cuda by default
