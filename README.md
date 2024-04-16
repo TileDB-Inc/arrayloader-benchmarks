@@ -92,7 +92,59 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 
 ![](img/census-us-west-2.png)
 
+### Repro
+
+<details><summary>Set up instance</summary>
+
+Launch g4dn.8xlarge, [`ami-0a8b4201c73c1b68f`]: (Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver)
+
+```bash
+# Clone repo
+sudo yum install -y git
+git clone git@github.com:ryan-williams/arrayloader-benchmarks.git
+cd arrayloader-benchmarks
+
+# Install/Configure Conda+env
+. <(curl -L https://j.mp/_rc) runsascoded/.rc  # dotfiles
+install_conda  # install Conda, configure libmamba solver
+conda env update -n arrayloader-benchmarks -f environment.yml
+conda activate arrayloader-benchmarks
+
+# Mount /mnt/nvme
+mnt_nvme /dev/nvme1n1 /mnt/nvme
+
+# Download Census
+d=cellxgene-census-public-us-west-2/cell-census/2023-12-15/soma
+time aws s3 sync s3://$d/ /mnt/nvme/s3/$d/  # ≈50mins, ≈180MiB/s, 593GiB total
+
+# Export Census subset to /mnt/nvme/census-benchmark_2:7
+nb=download-census-slice.ipynb
+mkdir out
+papermill $nb out/$nb
+mkdir data
+cp -r '/mnt/nvme/census-benchmark_2:7' data/
+```
+
+Dotfiles repo: [runsascoded/.rc], [`install_conda`], [`mnt_nvme`]
+</details>
+
+#### Run benchmarks
+```bash
+./execute-nb us-east-1  # from a g4dn.8xlarge in us-east-1
+./execute-nb us-west-2  # from a g4dn.8xlarge in us-west-2
+./execute-nb local-nvme -p census_uri '/mnt/nvme/s3/cellxgene-census-public-us-west-2/cell-census/2023-12-15/soma'
+./execute-nb subset-nvme -p experiment_uri '/mnt/nvme/census-benchmark_2:7' -p n_vars 0  # 20k vars already sliced
+./execute-nb subset-gp3 -p experiment_uri 'data/census-benchmark_2:7' -p n_vars 0  # 20k vars already sliced
+```
+
+See [execute-nb](execute-nb).
+
 [laminlabs/arrayloader-benchmarks]: https://github.com/laminlabs/arrayloader-benchmarks
 [A large-scale benchmark]: https://lamin.ai/blog/arrayloader-benchmarks#a-large-scale-benchmark
 
 [a subset of Census]: download-census-slice.ipynb
+
+[`ami-0a8b4201c73c1b68f`]: https://aws.amazon.com/marketplace/server/fulfillment?ami=ami-0a8b4201c73c1b68f&deliveryMethod=e6724620-3ffb-4cc9-9690-c310d8e794ef&productId=e6724620-3ffb-4cc9-9690-c310d8e794ef&ref_=cfg_full_continue&region=us-east-1&version=6568a2d5-69a5-40ab-affe-0d5735f010d5
+[runsascoded/.rc]: https://github.com/runsascoded/.rc
+[`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/b7cf68ad76f3cbba66055485a5084121dd3ec839/.py-rc#L418-L449
+[`mnt_nvme`]: https://github.com/ryan-williams/aws-helpers/blob/8fd44f731df904269f2d915413e13c75a5fc1af4/.aws-rc#L658-L669
