@@ -44,7 +44,7 @@ def benchmark(
         exp: Exp,
         batch_size: int = 1024,
         gc_freq: Optional[int] = None,
-        exclude_first_batch: bool = False,
+        exclude_first_batch: bool = True,
 ) -> Epoch:
     n_samples = exp.datapipe.shape[0]
     loader_iter = exp.loader.__iter__()
