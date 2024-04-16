@@ -1,10 +1,11 @@
 import json
 from abc import ABC
 from contextlib import redirect_stdout, contextmanager
-from json import JSONDecodeError
+from dataclasses import dataclass
 from os.path import join
 from re import fullmatch
 from tempfile import TemporaryDirectory
+from typing import Sequence
 
 from tiledbsoma import (
     tiledbsoma_stats_enable,
@@ -102,3 +103,29 @@ class TileDBStats(Stats):
             r'TileDB Embedded Version: \(\d+, \d+, \d+\)',
             r'TileDB-Py Version: \d+\.\d+\.\d+',
         ]
+
+
+def contexts(ctxs):
+    @contextmanager
+    def fn(ctxs):
+        if not ctxs:
+            yield []
+        else:
+            [ ctx, *rest ] = ctxs
+            with ctx as v, fn(rest) as vs:
+                yield [ v, *vs ]
+    return fn(ctxs)
+
+
+class Stats:
+    def __init__(self):
+        self.tdb = TileDBStats()
+        self.tdbs = TileDBSomaStats()
+
+    @contextmanager
+    def collect(self, name: str):
+        with contexts([
+            self.tdb.collect(name),
+            self.tdbs.collect(name),
+        ]):
+            yield

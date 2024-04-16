@@ -40,11 +40,17 @@ class Results:
     mapped_collection: Optional[Method] = None
 
 
-def benchmark(exp: Exp, batch_size: int = 1024, gc_freq: Optional[int] = None) -> Epoch:
+def benchmark(
+        exp: Exp,
+        batch_size: int = 1024,
+        gc_freq: Optional[int] = None,
+        exclude_first_batch: bool = False,
+) -> Epoch:
     n_samples = exp.datapipe.shape[0]
     loader_iter = exp.loader.__iter__()
-    # exclude first batch from benchmark as this includes the setup time
-    batch = next(loader_iter)
+    if exclude_first_batch:
+        # Optionally exclude first batch from benchmark, as it may include setup time
+        next(loader_iter)
 
     num_iter = n_samples // batch_size if n_samples is not None else None
 

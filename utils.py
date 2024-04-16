@@ -1,130 +1,69 @@
-from contextlib import redirect_stdout, contextmanager
+# Helper for wildcard-importing common utilities in notebooks:
+#
+# ```python
+# from utils import *
+# ```
+
+# Standard library
+from contextlib import redirect_stdout, contextmanager, nullcontext
 from dataclasses import dataclass, asdict, field
 import gc
 import json
 from math import log10
-import numpy as np
-from numpy import nan
 import os
 from os.path import exists, join, splitext
 from re import fullmatch
 from shutil import rmtree
-from subprocess import check_call
+from subprocess import check_call, check_output
 from sys import stderr
 from tempfile import TemporaryDirectory
 from time import time
-
-from tqdm import tqdm
 from typing import Literal, Protocol, Optional
 
+# 3rd party
+import numpy as np
+from numpy import nan
 import pyarrow as pa
 import pandas as pd
-import plotly
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.graph_objs import Figure
-from plotly.subplots import make_subplots
-default_colors = plotly.colors.DEFAULT_PLOTLY_COLORS
+import requests
+from tqdm import tqdm
 
-from err import err
+# Other local files
+from census import *
+from err import *
+from plot import *
 from stats import *
 
-from IPython.display import Image, Markdown
+stats = Stats()
+profile = stats.collect
+tdb = stats.tdb
+tdbs = stats.tdbs
 
 
-Fmt = Literal['png', 'md', 'fig']
-SaveFmt = Literal['png', 'json']
-Opt = Optional
+collection_id = '283d65eb-dd53-496d-adb7-7570c7caa443'
 
 
-@dataclass
-class PlotConfigs:
-    fmt: Fmt = 'fig'  # return the plot in this format
-    w: int = 1200
-    h: int = 800
-    save: list[SaveFmt] = field(default_factory=list)  # fmts to save plot as
-    v: bool = True           # "verbose": log files written, fmt returned
-    i: Opt[bool] = None      # "interactive": fallback to
-    dir: Opt[str] = None     # output directory
-    grid: Opt[str] = '#ccc'  # grid/axis colors
-    bg: Opt[str] = 'white'   # background color
-
-    @property
-    def interactive(self):
-        return self.fmt == 'fig'
-
-
-# Global object, overwrite members to control default behavior
-plot_configs = PlotConfigs()
-pc = plot_configs
-
-
-def plot(
-    fig: Figure,
-    name: str,
-    **kwargs,
-):
-    global plot_configs
-    defaults = {
-        k: v
-        for k, v in asdict(plot_configs).items()
-        if k not in kwargs
-    }
-    c = PlotConfigs(**dict(**defaults, **kwargs))
-
-    def log(msg):
-        """Maybe log ``msg`` to ``stderr``."""
-        if c.v:
-            err(msg)
-
-    def mkpath(fmt: SaveFmt):
-        path = f'{name}.{fmt}'
-        if c.dir:
-            path = join(c.dir, path)
-        log(f'Saving: {path}')
-        return path
-
-    # Set plot defaults / expand `PlotConfigs` properties
-    fig.update_layout(title=dict(x=0.5))
-    if c.bg:
-        fig.update_layout(plot_bgcolor=c.bg)
-    grid = c.grid
-    if c.grid:
-        fig.update_xaxes(
-            gridcolor=grid,
-            zerolinecolor=grid,
-            zerolinewidth=1,
-        ).update_yaxes(
-            gridcolor=grid,
-            zerolinecolor=grid,
-            zerolinewidth=1,
+def get_datasets(census, collection_id=collection_id, profile=None):
+    with stats.collect(profile) if profile else nullcontext():
+        return (
+            census["census_info"]["datasets"]
+            .read(
+                column_names=["dataset_id"],
+                value_filter=f"collection_id == '{collection_id}'",
+            )
+            .concat()
+            .to_pandas()
+            ["dataset_id"]
+            .tolist()
         )
 
-    # Save plot as png and/or JSON
-    img_kwargs = dict(width=c.w, height=c.h)
-    if 'png' in c.save:
-        path = mkpath('png')
-        fig.write_image(path, **img_kwargs)
-    if 'json' in c.save:
-        path = mkpath('json')
-        fig.write_json(path)
 
-    # Return plot as Plotly, Markdown, or Image
-    # - Plotly is nice in interactive notebooks, but is bad for committing to Git (>3MB of HTML/JS/CSS)
-    # - Markdown is nice for committing to Git (it's just `![](path-to-img.png)`), but Github / nbviewer don't render
-    #   it properly.
-    # - Image is a compromise, can bloat `.ipynb`, but renders in most web viewers.
-    fmt = c.fmt
-    if fmt == 'fig':
-        log("Returning Plotly Figure")
-        return fig
-    elif fmt == 'md':
-        if not 'png' in c.save:
-            raise ValueError(f"Can't return markdown as `png` wasn't included in `save`")
-        log("Returning IPython Markdown")
-        return Markdown(f'![]({mkpath("png")})')
-    elif fmt == 'png':
-        log("Returning IPython Image")
-        return Image(fig.to_image(**img_kwargs))
-    else:
-        raise ValueError(f"Unrecognized fmt: {fmt}")
+def get_region():
+    """Return the region the current EC2 instance is running in.
+
+    Adapted from https://stackoverflow.com/a/31336629/23555888.
+    """
+    r = requests.get('http://169.254.169.254/latest/meta-data/placement/availability-zone')
+    r.raise_for_status()
+    az = r.text
+    return az[:-1]

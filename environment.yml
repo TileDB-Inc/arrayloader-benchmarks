@@ -27,6 +27,7 @@ dependencies:
   - pip:
       - bionty
       - bokeh
+      - boto3
       - cellxgene_census
       - dask[dataframe]
       - distributed
@@ -34,6 +35,7 @@ dependencies:
       - lamindb
       - papermill
       - plotly
+      - requests
       - rich-click
       - tiledbsoma==1.7.2
       - torchdata
