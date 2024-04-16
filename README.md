@@ -81,9 +81,9 @@ cd results; for f in *.json; do
     jq -j '.census.epochs[0].samples_per_sec | floor' $f
     echo ' samples/sec'
 done | column -t | sort -nk2
-# us-east-1:    879   samples/sec
-# us-west-2:    1393  samples/sec
-# local-nvme:   1819  samples/sec
+# us-east-1:    884   samples/sec
+# us-west-2:    1423  samples/sec
+# local-nvme:   1830  samples/sec
 # subset-nvme:  2913  samples/sec
 # subset-gp3:   3036  samples/sec
 ```
