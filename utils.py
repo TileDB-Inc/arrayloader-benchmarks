@@ -33,12 +33,7 @@ from tqdm import tqdm
 from census import *
 from err import *
 from plot import *
-from stats import *
-
-stats = Stats()
-profile = stats.collect
-tdb = stats.tdb
-tdbs = stats.tdbs
+from tiledbsoma.stats import *
 
 
 collection_id = '283d65eb-dd53-496d-adb7-7570c7caa443'
