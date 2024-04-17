@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+#
+# Wrapper for executing `benchmark.ipynb` and saving the output notebook at benchmarks/<name>.ipynb
 
 set -e
 
@@ -16,6 +18,8 @@ cmd=(
 echo "Running: ${cmd[*]}" >&2
 "${cmd[@]}"
 
+# Clear papermill metadata (incl. per-cell timings) that mostly just adds diff noise
+# Adapted from [`clean_notebook`](https://github.com/ryan-williams/py-helpers/blob/c785f7a5ea3e043b1d16714f86a98794275901e0/.py-rc#L341-L362).
 tmp="$(mktemp)"
 jq --indent 1 '.cells |= map(del(.id) | .metadata |= del(.papermill,.execution,.widgets)) | del(.metadata.papermill)' "$out" > "$tmp"
 mv "$tmp" "$out"
