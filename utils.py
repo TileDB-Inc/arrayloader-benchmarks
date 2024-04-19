@@ -11,6 +11,7 @@ import gc
 import json
 from math import log10
 import os
+from os import makedirs
 from os.path import exists, join, splitext
 from re import fullmatch
 from shutil import rmtree
