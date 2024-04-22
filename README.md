@@ -64,7 +64,7 @@ cd arrayloader-benchmarks
 
 # Install/Configure Conda+env
 env=arrayloader-benchmarks
-conda env update -n $env -f environment.yml
+conda env update -n $env -f environment.yml --solver libmamba
 conda activate $env
 echo "conda activate $env" >> ~/.bash_profile
 
