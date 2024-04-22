@@ -42,20 +42,23 @@ Launch g4dn.8xlarge, [`ami-0de53a7d1c2790c36`]: (Amazon Linux 2 AMI with NVIDIA 
 sudo yum update -y && sudo yum install -y git htop jq patch tree wget
 
 # Install dotfiles, `install_{devtools,cmake,conda}` helpers used below
+# See https://github.com/runsascoded/.rc.
 . <(curl -L https://j.mp/_rc) runsascoded/.rc
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36
+# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36.
 install_devtools 11
 
 # Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86
+# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86.
 install_cmake 3.29.2
 
 # Install Conda, configure libmamba solver
-# See https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32
+# See https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32.
 install_conda
 
+# Clone this repo
+ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
 git clone --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 
