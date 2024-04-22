@@ -35,7 +35,7 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 
 <details><summary>Set up instance</summary>
 
-Launch g4dn.8xlarge, [`ami-0a8b4201c73c1b68f`]: (Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver)
+Launch g4dn.8xlarge, [`ami-0de53a7d1c2790c36`]: (Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver)
 
 ```bash
 # Clone repo
@@ -163,7 +163,7 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 
 [a subset of Census]: download-census-slice.ipynb
 
-[`ami-0a8b4201c73c1b68f`]: https://aws.amazon.com/marketplace/server/fulfillment?ami=ami-0a8b4201c73c1b68f&deliveryMethod=e6724620-3ffb-4cc9-9690-c310d8e794ef&productId=e6724620-3ffb-4cc9-9690-c310d8e794ef&ref_=cfg_full_continue&region=us-east-1&version=6568a2d5-69a5-40ab-affe-0d5735f010d5
+[`ami-0de53a7d1c2790c36`]: https://aws.amazon.com/marketplace/pp/prodview-64e4rx3h733ru
 [runsascoded/.rc]: https://github.com/runsascoded/.rc
 [`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.yum-rc#L18-L36
 [`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.pkg-rc#L76-L86
