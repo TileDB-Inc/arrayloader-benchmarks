@@ -45,11 +45,11 @@ sudo yum update -y && sudo yum install -y git htop patch tree wget
 . <(curl -L https://j.mp/_rc) runsascoded/.rc
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# See https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
+# See https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.yum-rc#L18-L36
 install_devtools 11
 
 # Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-# See https://github.com/ryan-williams/linux-helpers/blob/076e59ec359eb79ad6daf9a01e9fffbf046c52db/.pkg-rc#L76-L86
+# See https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.pkg-rc#L76-L86
 install_cmake 3.29.2
 
 # Install Conda, configure libmamba solver
@@ -65,14 +65,13 @@ conda env update -n $env -f environment.yml
 conda activate $env
 echo "conda activate $env" >> ~/.bash_profile
 
-# Install local TileDB-SOMA
-cd tiledb-soma
-make install
-pip install -e apis/python
-cd ..
+# Install local pip deps, including editable tiledb-soma and cellxgene_census
+pip install -r requirements.txt
 
-# Install local cellxgene_census
-pip install -e cellxgene-census/api/python/cellxgene_census
+# Build a local TileDB-SOMA; this needs to happen after the `pip install` above, for some reason
+cd tiledb-soma
+make clean && make install
+cd ..
 
 # Export Census subset to data/census-benchmark_2:7
 nb=download-census-slice.ipynb
@@ -162,6 +161,6 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 
 [`ami-0a8b4201c73c1b68f`]: https://aws.amazon.com/marketplace/server/fulfillment?ami=ami-0a8b4201c73c1b68f&deliveryMethod=e6724620-3ffb-4cc9-9690-c310d8e794ef&productId=e6724620-3ffb-4cc9-9690-c310d8e794ef&ref_=cfg_full_continue&region=us-east-1&version=6568a2d5-69a5-40ab-affe-0d5735f010d5
 [runsascoded/.rc]: https://github.com/runsascoded/.rc
-[`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
-[`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/076e59ec359eb79ad6daf9a01e9fffbf046c52db/.pkg-rc#L76-L86
+[`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.yum-rc#L18-L36
+[`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.pkg-rc#L76-L86
 [`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32
