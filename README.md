@@ -39,30 +39,31 @@ Launch g4dn.8xlarge, [`ami-0a8b4201c73c1b68f`]: (Amazon Linux 2 AMI with NVIDIA 
 
 ```bash
 # Clone repo
-sudo yum update -y && sudo yum install -y git htop tree wget
+sudo yum update -y && sudo yum install -y git htop patch tree wget
+
+# Install dotfiles, `install_{devtools,cmake,conda}` helpers used below
+. <(curl -L https://j.mp/_rc) runsascoded/.rc
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
 # See https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
 install_devtools 11
-echo 'scl enable devtoolset-11 bash' >> ~/.bash_profile
 
 # Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-cmake_version=3.29.2
-cmake_stem=cmake-$cmake_version-linux-x86_64.sh
-wget https://github.com/Kitware/CMake/releases/download/v$v/$cmake_stem.sh
-bash $cmake_stem.sh
-export PATH="$HOME/$cmake_stem/bin:$PATH"
-echo "export PATH=\"\$HOME/$cmake_stem/bin:\$PATH\"" >> ~/.bash_profile
+# See https://github.com/ryan-williams/linux-helpers/blob/076e59ec359eb79ad6daf9a01e9fffbf046c52db/.pkg-rc#L76-L86
+install_cmake 3.29.2
+
+# Install Conda, configure libmamba solver
+# See https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32
+install_conda
 
 git clone --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 
 # Install/Configure Conda+env
-. <(curl -L https://j.mp/_rc) runsascoded/.rc  # dotfiles
-install_conda  # install Conda, configure libmamba solver
-conda env update -n arrayloader-benchmarks -f environment.yml
-conda activate arrayloader-benchmarks
-echo 'conda activate arrayloader-benchmarks' >> ~/.bash_profile
+env=arrayloader-benchmarks
+conda env update -n $env -f environment.yml
+conda activate $env
+echo "conda activate $env" >> ~/.bash_profile
 
 # Install local TileDB-SOMA
 cd tiledb-soma
@@ -79,7 +80,7 @@ mkdir out
 papermill $nb out/$nb
 ```
 
-Dotfiles repo: [runsascoded/.rc], [`install_conda`], [`mnt_nvme`]
+Dotfiles repo: [runsascoded/.rc], [`install_devtools`], [`install_cmake`], [`install_conda`]
 </details>
 
 #### Run benchmarks
@@ -161,5 +162,6 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 
 [`ami-0a8b4201c73c1b68f`]: https://aws.amazon.com/marketplace/server/fulfillment?ami=ami-0a8b4201c73c1b68f&deliveryMethod=e6724620-3ffb-4cc9-9690-c310d8e794ef&productId=e6724620-3ffb-4cc9-9690-c310d8e794ef&ref_=cfg_full_continue&region=us-east-1&version=6568a2d5-69a5-40ab-affe-0d5735f010d5
 [runsascoded/.rc]: https://github.com/runsascoded/.rc
-[`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/b7cf68ad76f3cbba66055485a5084121dd3ec839/.py-rc#L418-L449
-[`mnt_nvme`]: https://github.com/ryan-williams/aws-helpers/blob/8fd44f731df904269f2d915413e13c75a5fc1af4/.aws-rc#L658-L669
+[`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
+[`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/076e59ec359eb79ad6daf9a01e9fffbf046c52db/.pkg-rc#L76-L86
+[`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32

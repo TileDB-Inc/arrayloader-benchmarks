@@ -1,14 +1,17 @@
-bionty
+# bionty
+aiobotocore==2.12.3
 bokeh
-boto3
+boto3==1.34.69
 -e cellxgene-census/api/python/cellxgene_census
-dask[dataframe]
-distributed
+dask[dataframe]==2024.4.1
+distributed==2024.4.1
+fsspec==2024.3.1
 kaleido
-lamindb
+# lamindb>=0.69.10
 papermill
 plotly
 requests
 rich-click
+s3fs==2024.3.1
 -e tiledb-soma/apis/python
-torchdata
+torchdata==0.7.1

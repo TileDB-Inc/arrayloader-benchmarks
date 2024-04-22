@@ -7,7 +7,11 @@ channels:
   - pytorch
 dependencies:
   - python=3.11.8
+  - boto3==1.34.69
   - cudatoolkit==11.4.1
+  - dask[dataframe]==2024.4.1
+  - distributed==2024.4.1
+  - fsspec==2024.3.1
   - h5py
   - loguru
   - merlin-core
@@ -17,12 +21,11 @@ dependencies:
   - pandas
   - pip
   - polars
-  - pyarrow
+  - pyarrow>=15
   - pytorch>=2,<2.2
   - rich
-  - s3fs
+  - s3fs==2024.3.1
   - scanpy
   - zarr
-  - tensorstore
-  - pip:
-      - -r requirements.txt
+  - tensorstore==0.1.51
+  - torchdata==0.7.1
