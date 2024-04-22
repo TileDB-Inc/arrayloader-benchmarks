@@ -1,3 +1,4 @@
+from os import makedirs
 from os.path import join, exists
 from shutil import rmtree
 from typing import Optional
@@ -19,6 +20,7 @@ def subset_census(query: ExperimentAxisQuery, output_base_dir: str) -> None:
 
     Adapted from https://github.com/chanzuckerberg/cellxgene-census/blob/atol/memento/epic/tools/models/memento/tests/fixtures/census_fixture.py#L10), see also https://github.com/chanzuckerberg/cellxgene-census/issues/1082.
     """
+    makedirs(output_base_dir, exist_ok=True)
     with Experiment.create(uri=output_base_dir) as exp_subset:
         x_data = query.X(layer_name="raw").tables().concat()
 
