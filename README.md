@@ -39,7 +39,7 @@ Launch g4dn.8xlarge, [`ami-0a8b4201c73c1b68f`]: (Amazon Linux 2 AMI with NVIDIA 
 
 ```bash
 # Clone repo
-sudo yum update -y && sudo yum install -y git htop patch tree wget
+sudo yum update -y && sudo yum install -y git htop jq patch tree wget
 
 # Install dotfiles, `install_{devtools,cmake,conda}` helpers used below
 . <(curl -L https://j.mp/_rc) runsascoded/.rc
@@ -77,6 +77,10 @@ cd ..
 nb=download-census-slice.ipynb
 mkdir out
 papermill $nb out/$nb
+
+# Run benchmark notebook on 133k cell Census subset located at data/census-benchmark_2:7
+# More info on parameters to this script below.
+execute-nb subset-gp3
 ```
 
 Dotfiles repo: [runsascoded/.rc], [`install_devtools`], [`install_cmake`], [`install_conda`]
