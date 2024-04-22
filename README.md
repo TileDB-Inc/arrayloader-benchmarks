@@ -45,11 +45,11 @@ sudo yum update -y && sudo yum install -y git htop jq patch tree wget
 . <(curl -L https://j.mp/_rc) runsascoded/.rc
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# See https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.yum-rc#L18-L36
+# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36
 install_devtools 11
 
 # Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-# See https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.pkg-rc#L76-L86
+# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86
 install_cmake 3.29.2
 
 # Install Conda, configure libmamba solver
@@ -165,6 +165,6 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 
 [`ami-0de53a7d1c2790c36`]: https://aws.amazon.com/marketplace/pp/prodview-64e4rx3h733ru
 [runsascoded/.rc]: https://github.com/runsascoded/.rc
-[`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.yum-rc#L18-L36
-[`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/7ed330218b40baea397020a353428036c09102c0/.pkg-rc#L76-L86
+[`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36
+[`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86
 [`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32
