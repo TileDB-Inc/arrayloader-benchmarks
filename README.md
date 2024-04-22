@@ -1,67 +1,6 @@
 # `arrayloader-benchmarks`
 
-This fork of [laminlabs/arrayloader-benchmarks] digs further into timings from "[A large-scale benchmark]" / [Plot Figure 1.ipynb](Plot%20Figure%201.ipynb):
-
-![](fig1panel1.svg)
-
-Observations / areas for further investigation:
-- Every ≈10th Census batch took ≈30x the average, accounting for ≈80% of total latency.
-- Merlin had 3x slower batches every 10, with an even more rigid pattern.
-- MappedCollection batch times tended to repeat every 7 batches, with slower batches often 40-50x slower than average.
-
-## Slowest ≈10% of batches account for most {MappedCollection,Census} latency
-
-[![](screenshots/cdf.gif)](screenshots/)
-
-Slowest 10% of batches' share of total latency:
-- Merlin: 18-25%
-- MappedCollection: 50-62%
-- Census: 76-81%
-
-<details><summary>See also: [slower batch times] / [faster batch times]</summary>
-
-[![](screenshots/ratios.gif)](screenshots/)
-</details>
-
-## Every 7th or 10th batch was 30x-100x slower
-
-### Merlin
-Batch times (colored by [batch index] mod 10):
-[![](img/merlin_batches_mod10.png)](img/merlin_batches_mod10.png)
-
-- In most epochs, every 10th run was ≈3x slower than average
-- First epoch was more stable around the overall average, but `1mod10`s were often much *faster*.
-
-<details><summary>Detail: every 10th batch slow</summary>
-
-[![](img/merlin_batches_mod10_1200:1800.png)](img/merlin_batches_mod10_1200:1800.png)
-
-The first epoch exhibited different "every 10th batch" periodicity.
-</details>
-
-### Census
-Batch times (colored by [batch index] mod 10):
-[![](img/census_batches_mod10.png)](img/census_batches_mod10.png)
-
-Worst 10% of batches were ≈30-40x slower than average
-
-Detail below shows "30x slower" batches repeated roughly every 10, but slipped by 1 every 40-50:
-
-<details><summary>Example slow-batch-gap pattern: 10, 10, 10, 10, 9</summary>
-
-[![](img/census_batches_mod10_1200:1800.png)](img/census_batches_mod10_1200:1800.png)
-</details>
-
-### MappedCollection
-Batch times (colored by [batch index] mod **7**):
-[![](img/mappedcollection_batches_mod7.png)](img/mappedcollection_batches_mod7.png)
-
-MappedCollection had slow batches every 7 (as opposed to every 10 for the other two methods).
-
-<details><summary>Detail: batch times repeating every 7</summary>
-
-[![](img/mappedcollection_batches_mod7_1200:1800.png)](img/mappedcollection_batches_mod7_1200:1800.png)
-</details>
+This fork of [laminlabs/arrayloader-benchmarks] digs further into timings from "[A large-scale benchmark]" / [Plot Figure 1.ipynb](Plot%20Figure%201.ipynb).
 
 ## Census timing vs. data locality
 
@@ -72,7 +11,7 @@ See [benchmark.ipynb](benchmark.ipynb), and example runs:
 - [subset-nvme.ipynb](benchmarkes/subset-nvme.ipynb): read a subset of Census from an NVMe drive
 - [subset-gp3.ipynb](benchmarkes/subset-gp3.ipynb): read a subset of Census from a gp3 EBS volume
 
-All 5 ran against the same 5 Census datasets (133790 cells), but the "subset" runs read an exported SOMA with just that data (≈714MiB vs. 593GiB); see [download-census-slice.ipynb](download-census-slice.ipynb). 
+All 5 ran against the same 5 Census datasets (133790 cells), but the "subset" runs read an exported SOMA with just that data (≈714MiB vs. 593GiB); see [download-census-slice.ipynb](download-census-slice.ipynb).
 
 Rough samples/sec numbers:
 ```bash
@@ -101,7 +40,7 @@ Launch g4dn.8xlarge, [`ami-0a8b4201c73c1b68f`]: (Amazon Linux 2 AMI with NVIDIA 
 ```bash
 # Clone repo
 sudo yum install -y git
-git clone git@github.com:ryan-williams/arrayloader-benchmarks.git
+git clone --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 
 # Install/Configure Conda+env
@@ -110,19 +49,26 @@ install_conda  # install Conda, configure libmamba solver
 conda env update -n arrayloader-benchmarks -f environment.yml
 conda activate arrayloader-benchmarks
 
-# Mount /mnt/nvme
-mnt_nvme /dev/nvme1n1 /mnt/nvme
+# Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
+curl https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.sh | bash
 
-# Download Census
-d=cellxgene-census-public-us-west-2/cell-census/2023-12-15/soma
-time aws s3 sync s3://$d/ /mnt/nvme/s3/$d/  # ≈50mins, ≈180MiB/s, 593GiB total
+# Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
+# See https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
+install_devtools 11
 
-# Export Census subset to /mnt/nvme/census-benchmark_2:7
+# Install local TileDB-SOMA
+cd tiledb-soma
+make install
+pip install -e apis/python
+cd ..
+
+# Install local cellxgene_census
+pip install -e cellxgene-census/api/python/cellxgene_census
+
+# Export Census subset to data/census-benchmark_2:7
 nb=download-census-slice.ipynb
 mkdir out
 papermill $nb out/$nb
-mkdir data
-cp -r '/mnt/nvme/census-benchmark_2:7' data/
 ```
 
 Dotfiles repo: [runsascoded/.rc], [`install_conda`], [`mnt_nvme`]
@@ -138,6 +84,67 @@ Dotfiles repo: [runsascoded/.rc], [`install_conda`], [`mnt_nvme`]
 ```
 
 See [execute-nb](execute-nb).
+
+## GC / Batch fetching account for most total latency
+
+See batch timings below: 
+- Every ≈10th Census batch took ≈30x the average, accounting for ≈80% of total latency.
+- Merlin had 3x slower batches every 10, with an even more rigid pattern.
+- MappedCollection batch times tended to repeat every 7 batches, with slower batches often 40-50x slower than average.
+
+### Slowest ≈10% of batches account for most {MappedCollection,Census} latency
+
+[![](screenshots/cdf.gif)](screenshots/)
+
+Slowest 10% of batches' share of total latency:
+- Merlin: 18-25%
+- MappedCollection: 50-62%
+- Census: 76-81%
+
+<details><summary>See also: [slower batch times] / [faster batch times]</summary>
+
+[![](screenshots/ratios.gif)](screenshots/)
+</details>
+
+### Every 7th or 10th batch was 30x-100x slower
+
+#### Merlin
+Batch times (colored by [batch index] mod 10):
+[![](img/merlin_batches_mod10.png)](img/merlin_batches_mod10.png)
+
+- In most epochs, every 10th run was ≈3x slower than average
+- First epoch was more stable around the overall average, but `1mod10`s were often much *faster*.
+
+<details><summary>Detail: every 10th batch slow</summary>
+
+[![](img/merlin_batches_mod10_1200:1800.png)](img/merlin_batches_mod10_1200:1800.png)
+
+The first epoch exhibited different "every 10th batch" periodicity.
+</details>
+
+#### Census
+Batch times (colored by [batch index] mod 10):
+[![](img/census_batches_mod10.png)](img/census_batches_mod10.png)
+
+Worst 10% of batches were ≈30-40x slower than average
+
+Detail below shows "30x slower" batches repeated roughly every 10, but slipped by 1 every 40-50:
+
+<details><summary>Example slow-batch-gap pattern: 10, 10, 10, 10, 9</summary>
+
+[![](img/census_batches_mod10_1200:1800.png)](img/census_batches_mod10_1200:1800.png)
+</details>
+
+#### MappedCollection
+Batch times (colored by [batch index] mod **7**):
+[![](img/mappedcollection_batches_mod7.png)](img/mappedcollection_batches_mod7.png)
+
+MappedCollection had slow batches every 7 (as opposed to every 10 for the other two methods).
+
+<details><summary>Detail: batch times repeating every 7</summary>
+
+[![](img/mappedcollection_batches_mod7_1200:1800.png)](img/mappedcollection_batches_mod7_1200:1800.png)
+</details>
 
 [laminlabs/arrayloader-benchmarks]: https://github.com/laminlabs/arrayloader-benchmarks
 [A large-scale benchmark]: https://lamin.ai/blog/arrayloader-benchmarks#a-large-scale-benchmark
