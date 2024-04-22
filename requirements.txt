@@ -1,0 +1,14 @@
+bionty
+bokeh
+boto3
+-e cellxgene-census/api/python/cellxgene_census
+dask[dataframe]
+distributed
+kaleido
+lamindb
+papermill
+plotly
+requests
+rich-click
+-e tiledb-soma/apis/python
+torchdata

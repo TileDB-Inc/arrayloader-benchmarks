@@ -1,4 +1,4 @@
-name: lamin
+name: arrayloader-benchmarks
 channels:
   - nvidia
   - rapidsai
@@ -6,7 +6,7 @@ channels:
   - conda-forge
   - pytorch
 dependencies:
-  - python=3.11
+  - python=3.11.8
   - cudatoolkit==11.4.1
   - h5py
   - loguru
@@ -25,17 +25,4 @@ dependencies:
   - zarr
   - tensorstore
   - pip:
-      - bionty
-      - bokeh
-      - boto3
-      - cellxgene_census
-      - dask[dataframe]
-      - distributed
-      - kaleido
-      - lamindb
-      - papermill
-      - plotly
-      - requests
-      - rich-click
-      - tiledbsoma==1.7.2
-      - torchdata
+      - -r requirements.txt
