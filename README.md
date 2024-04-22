@@ -39,7 +39,21 @@ Launch g4dn.8xlarge, [`ami-0a8b4201c73c1b68f`]: (Amazon Linux 2 AMI with NVIDIA 
 
 ```bash
 # Clone repo
-sudo yum install -y git
+sudo yum update -y && sudo yum install -y git htop tree wget
+
+# Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
+# See https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
+install_devtools 11
+echo 'scl enable devtoolset-11 bash' >> ~/.bash_profile
+
+# Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
+cmake_version=3.29.2
+cmake_stem=cmake-$cmake_version-linux-x86_64.sh
+wget https://github.com/Kitware/CMake/releases/download/v$v/$cmake_stem.sh
+bash $cmake_stem.sh
+export PATH="$HOME/$cmake_stem/bin:$PATH"
+echo "export PATH=\"\$HOME/$cmake_stem/bin:\$PATH\"" >> ~/.bash_profile
+
 git clone --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 
@@ -48,13 +62,7 @@ cd arrayloader-benchmarks
 install_conda  # install Conda, configure libmamba solver
 conda env update -n arrayloader-benchmarks -f environment.yml
 conda activate arrayloader-benchmarks
-
-# Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-curl https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.sh | bash
-
-# Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# See https://github.com/ryan-williams/linux-helpers/blob/11e7455cef7207de86826bf5b486dffa175aa9f5/.yum-rc#L18-L28
-install_devtools 11
+echo 'conda activate arrayloader-benchmarks' >> ~/.bash_profile
 
 # Install local TileDB-SOMA
 cd tiledb-soma
