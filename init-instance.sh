@@ -42,11 +42,6 @@ echo "conda activate $env" >> ~/.bash_profile
 # Install local pip deps, including editable tiledb-soma and cellxgene_census
 pip install -r requirements.txt
 
-# Build a local TileDB-SOMA; this needs to happen after the `pip install` above, for some reason
-cd tiledb-soma
-make clean && make install
-cd ..
-
 # Export Census subset to data/census-benchmark_2:7
 nb=download-census-slice.ipynb
 mkdir out
