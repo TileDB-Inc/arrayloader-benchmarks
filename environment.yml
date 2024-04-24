@@ -16,6 +16,7 @@ dependencies:
   - loguru
   - merlin-core==23.08.00
   - merlin-dataloader==23.08.00
+  - mkl<2024  # https://github.com/pytorch/pytorch/issues/123097#issuecomment-2055236551
   - notebook
   - numpy
   - pandas
