@@ -33,61 +33,10 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 
 ### Repro
 
-<details><summary>Set up instance</summary>
-
-Launch g4dn.8xlarge, [`ami-0de53a7d1c2790c36`]: (Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver)
-
-```bash
-# Clone repo
-sudo yum update -y && sudo yum install -y git htop jq patch tree wget
-
-# Install dotfiles, `install_{devtools,cmake,conda}` helpers used below
-# See https://github.com/runsascoded/.rc.
-. <(curl -L https://j.mp/_rc) runsascoded/.rc
-
-# Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36.
-install_devtools 11
-
-# Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86.
-install_cmake 3.29.2
-
-# Install Conda, configure libmamba solver
-# See https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32.
-install_conda
-
-# Clone this repo
-ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
-git clone --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
-cd arrayloader-benchmarks
-
-# Install/Configure Conda+env
-env=arrayloader-benchmarks
-conda env update -n $env -f environment.yml --solver libmamba
-conda activate $env
-echo "conda activate $env" >> ~/.bash_profile
-
-# Install local pip deps, including editable tiledb-soma and cellxgene_census
-pip install -r requirements.txt
-
-# Build a local TileDB-SOMA; this needs to happen after the `pip install` above, for some reason
-cd tiledb-soma
-make clean && make install
-cd ..
-
-# Export Census subset to data/census-benchmark_2:7
-nb=download-census-slice.ipynb
-mkdir out
-papermill $nb out/$nb
-
-# Run benchmark notebook on 133k cell Census subset located at data/census-benchmark_2:7
-# More info on parameters to this script below.
-execute-nb subset-gp3
-```
-
-Dotfiles repo: [runsascoded/.rc], [`install_devtools`], [`install_cmake`], [`install_conda`]
-</details>
+#### Set up instance
+- Launch g4dn.8xlarge, AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver")
+- Run [`./init-instance.sh`]
+  - Uses helpers from [runsascoded/.rc] ([`install_devtools`], [`install_cmake`], [`install_conda`])
 
 #### Run benchmarks
 ```bash
@@ -171,3 +120,4 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 [`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36
 [`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86
 [`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32
+[`./init-instance.sh`]: init-instance.sh
