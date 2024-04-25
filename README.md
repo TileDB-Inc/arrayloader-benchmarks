@@ -34,10 +34,21 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 ### Repro
 
 #### Set up instance
-- Launch g4dn.8xlarge, AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver")
-- Run [`./init-instance.sh`]
+1. Launch g4dn.8xlarge, AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver")
+2. Run [`./init-instance.sh`]:
+    ```bash
+    wget https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh
+    bash init-instance.sh
+    ```
+
+After installing system deps and a configuring a Conda env, this will:
+- Download a 133k-cell subset of the Census to `data/census-benchmark_2:7`.
+- Execute [benchmark.ipynb] on that dataset, writing an output notebook to [benchmarks/subset-gp3.ipynb].
+
+If you then open [benchmarks/subset-gp3.ipynb], you'll see some timings related to loading those 133k cells with Census/SOMA.
 
 #### Run benchmarks
+[execute-nb](execute-nb) supports running [benchmark.ipynb] on various Census slices and localities: 
 ```bash
 ./execute-nb us-east-1  # from a g4dn.8xlarge in us-east-1
 ./execute-nb us-west-2  # from a g4dn.8xlarge in us-west-2
@@ -46,11 +57,9 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 ./execute-nb subset-gp3 -p experiment_uri 'data/census-benchmark_2:7' -p n_vars 0  # 20k vars already sliced
 ```
 
-See [execute-nb](execute-nb).
-
 ## GC / Batch fetching account for most total latency
 
-See batch timings below: 
+See batch timings below:
 - Every ≈10th Census batch took ≈30x the average, accounting for ≈80% of total latency.
 - Merlin had 3x slower batches every 10, with an even more rigid pattern.
 - MappedCollection batch times tended to repeat every 7 batches, with slower batches often 40-50x slower than average.
@@ -116,3 +125,6 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 
 [`ami-0de53a7d1c2790c36`]: https://aws.amazon.com/marketplace/pp/prodview-64e4rx3h733ru
 [`./init-instance.sh`]: init-instance.sh
+
+[benchmark.ipynb]: benchmark.ipynb
+[benchmarks/subset-gp3.ipynb]: benchmarks/subset-gp3.ipynb
