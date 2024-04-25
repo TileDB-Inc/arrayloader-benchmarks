@@ -36,7 +36,6 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 #### Set up instance
 - Launch g4dn.8xlarge, AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver")
 - Run [`./init-instance.sh`]
-  - Uses helpers from [runsascoded/.rc] ([`install_devtools`], [`install_cmake`], [`install_conda`])
 
 #### Run benchmarks
 ```bash
@@ -116,8 +115,4 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 [a subset of Census]: download-census-slice.ipynb
 
 [`ami-0de53a7d1c2790c36`]: https://aws.amazon.com/marketplace/pp/prodview-64e4rx3h733ru
-[runsascoded/.rc]: https://github.com/runsascoded/.rc
-[`install_devtools`]: https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36
-[`install_cmake`]: https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86
-[`install_conda`]: https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32
 [`./init-instance.sh`]: init-instance.sh
