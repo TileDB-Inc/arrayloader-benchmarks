@@ -16,22 +16,75 @@ branch="${1:-main}"
 # System deps
 sudo yum update -y && sudo yum install -y git jq patch
 
-# Install dotfiles, `install_{devtools,cmake,conda}` helpers used below
-# See https://github.com/runsascoded/.rc.
-wget https://j.mp/_rc
-bash _rc runsascoded/.rc
-
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.yum-rc#L18-L36.
+install_devtools() {
+    # Adapted from https://stackoverflow.com/a/66376026/23555888
+    local v="${1:-11}"
+    sudo yum-config-manager --add-repo http://mirror.centos.org/centos/7/sclo/x86_64/rh/
+    sudo yum install -y wget
+
+    fortran=libgfortran5-8.3.1-2.1.1.el7.x86_64.rpm
+    wget http://mirror.centos.org/centos/7/os/x86_64/Packages/$fortran
+    sudo yum install $fortran -y
+    rm $fortran
+
+    sudo yum install -y devtoolset-$v --nogpgcheck
+    local enable=/opt/rh/devtoolset-$v/enable
+    . "$enable"
+    echo >> ~/.bash_profile
+    echo "# Use GCC $v; see https://github.com/ryan-williams/linux-helpers/blob/main/.yum-rc" >> ~/.bash_profile
+    echo ". \"$enable\"" >> ~/.bash_profile
+    which -a gcc
+}
 install_devtools 11
 
 # Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
-# See https://github.com/ryan-williams/linux-helpers/blob/1421be8d99b3c494b64bf1f4cabdaa25c38e16f3/.pkg-rc#L76-L86.
+install_cmake() {
+    cmake_version="${1:-3.29.2}"
+    cmake_stem=cmake-$cmake_version-linux-x86_64
+    wget https://github.com/Kitware/CMake/releases/download/v$cmake_version/$cmake_stem.sh
+    bash $cmake_stem.sh
+    export PATH="$HOME/$cmake_stem/bin:$PATH"
+    echo >> ~/.bash_profile
+    echo "# Use CMake $cmake_version; see https://github.com/ryan-williams/linux-helpers/blob/main/.pkg-rc" >> ~/.bash_profile
+    echo "export PATH=\"\$HOME/$cmake_stem/bin:\$PATH\"" >> ~/.bash_profile
+    cmake --version
+}
 install_cmake 3.29.2
-. .bash_profile
 
 # Install Conda, configure libmamba solver
-# See https://github.com/ryan-williams/py-helpers/blob/4996a89ca68e98e364a3e6b23d204f2fb1aa1588/.conda-rc#L1-L32.
+install_conda() {
+    if [ $# -gt 0 ]; then
+        d="$1"
+        path_args=(-p "$@")
+    else
+        d="$HOME/miniconda3"
+        path_args=()
+    fi
+    os="$(uname -s)"
+    if [ "$os" == "Darwin" ]; then
+        os="MacOSX"
+    fi
+    arch="$(uname -m)"
+    base="https://repo.anaconda.com/miniconda"
+    name="$(curl "$base/" | grep "$os" | grep latest | grep -m1 "$arch" | grep -o 'Miniconda3.*sh">' | grep -o '.*.sh')"
+    if [ -z "$name" ]; then
+        echo "Failed to find Miniconda3 installer for $os $arch at $base" >&2
+        return 1
+    fi
+    sh_url="$base/$name"
+    echo "Downloading $sh_url" >&2
+    wget -Ominiconda.sh "$sh_url"
+    bash miniconda.sh -b "${path_args[@]}"
+    rm miniconda.sh
+    . $d/etc/profile.d/conda.sh
+    echo ". $d/etc/profile.d/conda.sh" >> ~/.bashrc
+    # conda="$d/bin/conda"
+    conda install -y -n base conda-libmamba-solver
+    conda config --set solver libmamba
+    # $conda config --set channel_priority flexible  # https://github.com/rapidsai/cuml/issues/4016
+    conda activate base
+}
 install_conda
 
 # Clone this repo
@@ -56,4 +109,4 @@ papermill $nb out/$nb
 
 # Run benchmark notebook on 133k cell Census subset located at data/census-benchmark_2:7
 # More info on parameters to this script below.
-execute-nb subset-gp3
+./execute-nb subset-gp3
