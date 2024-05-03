@@ -4,9 +4,7 @@
 # README.md for more info.
 #
 # ```bash
-# branch=main
-# wget https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/$branch/init-instance.sh
-# bash init-instance.sh $branch
+# . <(https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
 # ```
 
 set -ex

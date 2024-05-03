@@ -37,8 +37,7 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 1. Launch g4dn.8xlarge, AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver")
 2. Run [`./init-instance.sh`]:
     ```bash
-    wget https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh
-    bash init-instance.sh
+    . <(https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
     ```
 
 After installing system deps and a configuring a Conda env, this will:
