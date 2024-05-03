@@ -4,7 +4,7 @@
 # README.md for more info.
 #
 # ```bash
-# . <(https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
+# . <(curl https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
 # ```
 
 set -ex

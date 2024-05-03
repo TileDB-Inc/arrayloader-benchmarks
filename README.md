@@ -33,20 +33,29 @@ Plot images are in [img/](img/), e.g. [img/census-us-west-2.png](img/census-us-w
 
 ### Repro
 
-#### Set up instance
-1. Launch g4dn.8xlarge, AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver")
-2. Run [`./init-instance.sh`]:
-    ```bash
-    . <(https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
-    ```
+#### 1. Launch instance
+Example using a g4dn.8xlarge and AMI [`ami-0de53a7d1c2790c36`] ("Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver"), with [`launch_instance.py`]:
+```bash
+instance="$(launch_instance.py -a ami-0de53a7d1c2790c36 -i g4dn.8xlarge)"
+ssh $instance
+```
 
-After installing system deps and a configuring a Conda env, this will:
-- Download a 133k-cell subset of the Census to `data/census-benchmark_2:7`.
-- Execute [benchmark.ipynb] on that dataset, writing an output notebook to [benchmarks/subset-gp3.ipynb].
+#### 2. Initialize instance
+Eval [`init-instance.sh`] (assumes Amazon Linux):
+```bash
+. <(curl https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
+```
+The CMake install will prompt you for a `y` a couple times.
+
+This will:
+- Install system deps
+- Configure a Conda env (named `arrayloader-benchmarks`)
+- Download a 133k-cell subset of the Census to `data/census-benchmark_2:7` (see [download-census-slice.ipynb]).
+- Execute [benchmark.ipynb] on that dataset, writing an output notebook to [benchmarks/subset-gp3.ipynb] (see [execute-nb]).
 
 If you then open [benchmarks/subset-gp3.ipynb], you'll see some timings related to loading those 133k cells with Census/SOMA.
 
-#### Run benchmarks
+#### 3. Run benchmarks
 [execute-nb](execute-nb) supports running [benchmark.ipynb] on various Census slices and localities: 
 ```bash
 ./execute-nb us-east-1  # from a g4dn.8xlarge in us-east-1
@@ -57,65 +66,8 @@ If you then open [benchmarks/subset-gp3.ipynb], you'll see some timings related 
 ```
 
 ## GC / Batch fetching account for most total latency
+See some earlier analysis at [gc-batch-fetching.md].
 
-See batch timings below:
-- Every ≈10th Census batch took ≈30x the average, accounting for ≈80% of total latency.
-- Merlin had 3x slower batches every 10, with an even more rigid pattern.
-- MappedCollection batch times tended to repeat every 7 batches, with slower batches often 40-50x slower than average.
-
-### Slowest ≈10% of batches account for most {MappedCollection,Census} latency
-
-[![](screenshots/cdf.gif)](screenshots/)
-
-Slowest 10% of batches' share of total latency:
-- Merlin: 18-25%
-- MappedCollection: 50-62%
-- Census: 76-81%
-
-<details><summary>See also: [slower batch times] / [faster batch times]</summary>
-
-[![](screenshots/ratios.gif)](screenshots/)
-</details>
-
-### Every 7th or 10th batch was 30x-100x slower
-
-#### Merlin
-Batch times (colored by [batch index] mod 10):
-[![](img/merlin_batches_mod10.png)](img/merlin_batches_mod10.png)
-
-- In most epochs, every 10th run was ≈3x slower than average
-- First epoch was more stable around the overall average, but `1mod10`s were often much *faster*.
-
-<details><summary>Detail: every 10th batch slow</summary>
-
-[![](img/merlin_batches_mod10_1200:1800.png)](img/merlin_batches_mod10_1200:1800.png)
-
-The first epoch exhibited different "every 10th batch" periodicity.
-</details>
-
-#### Census
-Batch times (colored by [batch index] mod 10):
-[![](img/census_batches_mod10.png)](img/census_batches_mod10.png)
-
-Worst 10% of batches were ≈30-40x slower than average
-
-Detail below shows "30x slower" batches repeated roughly every 10, but slipped by 1 every 40-50:
-
-<details><summary>Example slow-batch-gap pattern: 10, 10, 10, 10, 9</summary>
-
-[![](img/census_batches_mod10_1200:1800.png)](img/census_batches_mod10_1200:1800.png)
-</details>
-
-#### MappedCollection
-Batch times (colored by [batch index] mod **7**):
-[![](img/mappedcollection_batches_mod7.png)](img/mappedcollection_batches_mod7.png)
-
-MappedCollection had slow batches every 7 (as opposed to every 10 for the other two methods).
-
-<details><summary>Detail: batch times repeating every 7</summary>
-
-[![](img/mappedcollection_batches_mod7_1200:1800.png)](img/mappedcollection_batches_mod7_1200:1800.png)
-</details>
 
 [laminlabs/arrayloader-benchmarks]: https://github.com/laminlabs/arrayloader-benchmarks
 [A large-scale benchmark]: https://lamin.ai/blog/arrayloader-benchmarks#a-large-scale-benchmark
@@ -123,7 +75,11 @@ MappedCollection had slow batches every 7 (as opposed to every 10 for the other 
 [a subset of Census]: download-census-slice.ipynb
 
 [`ami-0de53a7d1c2790c36`]: https://aws.amazon.com/marketplace/pp/prodview-64e4rx3h733ru
-[`./init-instance.sh`]: init-instance.sh
+[`init-instance.sh`]: init-instance.sh
 
 [benchmark.ipynb]: benchmark.ipynb
 [benchmarks/subset-gp3.ipynb]: benchmarks/subset-gp3.ipynb
+[`launch_instance.py`]: https://github.com/ryan-williams/aws-helpers/blob/main/launch_instance.py
+[download-census-slice.ipynb]: download-census-slice.ipynb
+[execute-nb]: execute-nb
+[gc-batch-fetching.md]: gc-batch-fetching.md
