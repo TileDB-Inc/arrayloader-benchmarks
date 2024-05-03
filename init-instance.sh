@@ -79,10 +79,8 @@ install_conda() {
     rm miniconda.sh
     . $d/etc/profile.d/conda.sh
     echo ". $d/etc/profile.d/conda.sh" >> ~/.bashrc
-    # conda="$d/bin/conda"
     conda install -y -n base conda-libmamba-solver
     conda config --set solver libmamba
-    # $conda config --set channel_priority flexible  # https://github.com/rapidsai/cuml/issues/4016
     conda activate base
 }
 install_conda
