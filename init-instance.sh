@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Run this script on a fresh EC2 instance (AMI ) to initialize and run a simple benchmark; see
+# Run this script on a fresh EC2 instance (AMI ami-0de53a7d1c2790c36) to initialize and run a simple benchmark; see
 # README.md for more info.
 #
 # ```bash
@@ -30,7 +30,7 @@ install_devtools() {
     local enable=/opt/rh/devtoolset-$v/enable
     . "$enable"
     echo >> ~/.bash_profile
-    echo "# Use GCC $v; see https://github.com/ryan-williams/linux-helpers/blob/main/.yum-rc" >> ~/.bash_profile
+    echo "# Use GCC $v" >> ~/.bash_profile
     echo ". \"$enable\"" >> ~/.bash_profile
     which -a gcc
 }
@@ -95,8 +95,8 @@ conda activate $env
 echo "conda activate $env" >> ~/.bash_profile
 conda env list
 
-# Install local pip deps, including editable tiledb-soma and cellxgene_census
-pip install -r requirements.txt
+# Install this library (including editable tiledb-soma and cellxgene_census)
+pip install -e .
 
 # Export Census subset to data/census-benchmark_2:7
 nb=download-census-slice.ipynb
@@ -106,3 +106,5 @@ papermill $nb out/$nb
 # Run benchmark notebook on 133k cell Census subset located at data/census-benchmark_2:7
 # More info on parameters to this script below.
 ./execute-nb subset-gp3
+
+set +ex

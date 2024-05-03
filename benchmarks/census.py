@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from os import makedirs
 from os.path import join, exists
 from shutil import rmtree
@@ -5,13 +6,27 @@ from typing import Optional
 
 import pyarrow as pa
 
-import cellxgene_census
-import somacore as soma
 from somacore import ExperimentAxisQuery, AxisQuery
 import tiledbsoma
 from tiledbsoma import Experiment, Measurement
 
-from err import err
+from benchmarks.err import err
+from tiledbsoma.stats import stats
+
+
+def get_datasets(census, collection_id, profile=None):
+    with stats.collect(profile) if profile else nullcontext():
+        return (
+            census["census_info"]["datasets"]
+            .read(
+                column_names=["dataset_id"],
+                value_filter=f"collection_id == '{collection_id}'",
+            )
+            .concat()
+            .to_pandas()
+            ["dataset_id"]
+            .tolist()
+        )
 
 
 def subset_census(query: ExperimentAxisQuery, output_base_dir: str) -> None:
