@@ -31,28 +31,18 @@ import requests
 from tqdm import tqdm
 
 # Other local files
-from census import *
-from err import *
-from plot import *
+from benchmarks import census
+from benchmarks.census import *
+from benchmarks.err import *
+from benchmarks.plot import *
 from tiledbsoma.stats import *
 
 
 collection_id = '283d65eb-dd53-496d-adb7-7570c7caa443'
 
 
-def get_datasets(census, collection_id=collection_id, profile=None):
-    with stats.collect(profile) if profile else nullcontext():
-        return (
-            census["census_info"]["datasets"]
-            .read(
-                column_names=["dataset_id"],
-                value_filter=f"collection_id == '{collection_id}'",
-            )
-            .concat()
-            .to_pandas()
-            ["dataset_id"]
-            .tolist()
-        )
+def get_datasets(_census, collection_id=collection_id, profile=None):
+    return census.get_datasets(census=_census, collection_id=collection_id, profile=profile)
 
 
 def get_region():
