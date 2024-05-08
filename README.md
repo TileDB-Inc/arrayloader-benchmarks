@@ -16,14 +16,40 @@ Generate a local copy of a small Census slice:
 # - Save to data/census-benchmark_2:3 (default: `-d data`)
 alb download -s 2 -e 4
 ```
-Or download from S3:
-```bash
-aws s3 sync --exclude '*' --include 'census-benchmark_2:4/*' s3://tiledb-rw/arrayloader-benchmarks/ data/
-```
+
+[//]: # (TODO: make these objects publicly accessible)
+[//]: # (Or download from S3:)
+[//]: # (```bash)
+[//]: # (aws s3 sync --exclude '*' --include 'census-benchmark_2:4/*' s3://tiledb-rw/arrayloader-benchmarks/ data/)
+[//]: # (```)
 
 ## Benchmark
+
+No shuffle:
 ```bash
-alb 
+alb benchmark data/census-benchmark_2:4
+# read_table elapsed: 1.43s
+# read_blockwise_table elapsed: 2.33s
+# read_blockwise_scipy_coo elapsed: 10.36s
+# read_blockwise_scipy_csr elapsed: 13.92s
+```
+
+Intra-chunk shuffle:
+```bash
+alb benchmark -s data/census-benchmark_2:4
+# read_table elapsed: 1.50s
+# read_blockwise_table elapsed: 2.70s
+# read_blockwise_scipy_coo elapsed: 12.83s
+# read_blockwise_scipy_csr elapsed: 19.29s
+```
+
+Global shuffle:
+```bash
+alb benchmark -ss data/census-benchmark_2:4
+# read_table elapsed: 21.04s
+# read_blockwise_table elapsed: 21.47s
+# read_blockwise_scipy_coo elapsed: 35.60s
+# read_blockwise_scipy_csr elapsed: 37.63s
 ```
 
 [laminlabs/arrayloader-benchmarks]: https://github.com/laminlabs/arrayloader-benchmarks
