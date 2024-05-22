@@ -1,5 +1,9 @@
 ## Census timing vs. data locality
 
+**This directory contains notebooks and info related to running benchmarks on EC2; it's mostly been superseded by the `alb` CLI in the parent directly.**
+
+---
+
 See [benchmark.ipynb](benchmark.ipynb), and example runs:
 - [us-east-1.ipynb](benchmarkes/us-east-1.ipynb): read Census (us-west-2) from an instance in us-east-1
 - [us-west-2.ipynb](benchmarkes/us-west-2.ipynb): read Census (us-west-2) from an instance in us-west-2
