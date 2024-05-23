@@ -1,0 +1,7 @@
+[core]
+    autostage = true
+    remote = w2
+['remote "e1"']
+    url = s3://rw-tdb-east1
+['remote "w2"']
+    url = s3://rw-tdb-west2

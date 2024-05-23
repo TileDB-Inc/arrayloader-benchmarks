@@ -1,0 +1,6 @@
+outs:
+- md5: c347a2dd871f1af240d24af6c799c3f7.dir
+  size: 176490814
+  nfiles: 81
+  hash: md5
+  path: census-benchmark_2:3
