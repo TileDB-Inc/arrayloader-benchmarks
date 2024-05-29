@@ -98,8 +98,8 @@ dataset = merlin.io.Dataset(
 )
 
 loader = Loader(
-    dataset, 
-    batch_size=BATCH_SIZE, 
+    dataset,
+    batch_size=BATCH_SIZE,
     shuffle=True,
     parts_per_chunk=1,
     drop_last=True,

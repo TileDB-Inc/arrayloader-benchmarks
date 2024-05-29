@@ -6,7 +6,9 @@ This fork of [laminlabs/arrayloader-benchmarks] digs further into timings from "
 Install this library, as well as [cellxgene-census] and [tiledb-soma] Git submodules:
 
 ```bash
-pip install -e . -e cellxgene-census/api/python/cellxgene_census -e tiledb-soma/apis/python
+pip install -e cellxgene-census/api/python/cellxgene_census
+pip install -e tiledb-soma/apis/python
+pip install -e .
 ```
 
 ## Prepare a local dataset
@@ -18,11 +20,11 @@ Generate a local copy of a small Census slice:
 alb download -s 2 -e 4
 ```
 
-[//]: # (TODO: make these objects publicly accessible)
-[//]: # (Or download from S3:)
-[//]: # (```bash)
-[//]: # (aws s3 sync --exclude '*' --include 'census-benchmark_2:4/*' s3://tiledb-rw/arrayloader-benchmarks/ data/)
-[//]: # (```)
+Or download a pre-sliced dataset:
+```bash
+dst=data/census-benchmark_2:4
+aws s3 sync s3://rw-tdb-west2/arrayloader-benchmarks/$dst $dst
+```
 
 ## Benchmark
 

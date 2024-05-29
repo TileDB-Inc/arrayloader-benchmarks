@@ -76,8 +76,8 @@ def read_blockwise_scipy_csr(X, obs_joinids, soma_chunk, var_slice, log):
 @click.option('-r', '--rng-seed', type=int)
 @click.option('-s', '--shuffle', count=True, help='1x: chunk shuffle, 2x: global shuffle')
 @click.option('-S', '--soma-buffer-size', default=1024**3, type=int)
-@click.option('-v', '--n_vars', default=20_000, type=int)
-@click.option('-V', '--verbose', is_flag=True, help='Print stats about each chunk read to stderr')
+@click.option('-v', '--verbose', is_flag=True, help='Print stats about each chunk read to stderr')
+@click.option('-V', '--n_vars', default=20_000, type=int)
 @click.argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
 def benchmark(soma_chunk, py_buffer_size, rng_seed, shuffle, soma_buffer_size, n_vars, verbose, uri):
     var_slice = slice(0, n_vars - 1)
