@@ -18,11 +18,11 @@ Generate a local copy of a small Census slice:
 alb download -s 2 -e 4
 ```
 
-[//]: # (TODO: make these objects publicly accessible)
-[//]: # (Or download from S3:)
-[//]: # (```bash)
-[//]: # (aws s3 sync --exclude '*' --include 'census-benchmark_2:4/*' s3://tiledb-rw/arrayloader-benchmarks/ data/)
-[//]: # (```)
+Or download a pre-sliced dataset:
+```bash
+dst=data/census-benchmark_2:4
+aws sync s3://rw-tdb-west2/arrayloader-benchmarks/$dst $dst
+```
 
 ## Benchmark
 
