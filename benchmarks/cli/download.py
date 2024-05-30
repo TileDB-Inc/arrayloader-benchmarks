@@ -20,6 +20,7 @@ from benchmarks.census import download_datasets, get_datasets
 @option('-v', '--n-vars', default=20_000, help='Slice the first `n_vars` vars')
 @option('-V', '--census-version', default="2023-12-15")
 def download(collection_id, out_root, force, end, out_dir, start, census_uri, n_vars, census_version):
+    """Slice and export cellxgene-census datasets to a local directory."""
     if out_dir is None:
         suffix = "" if start is None and end is None else f"_{start or ''}:{end or ''}"
         out_dir = f'{out_root}/census-benchmark{suffix}'

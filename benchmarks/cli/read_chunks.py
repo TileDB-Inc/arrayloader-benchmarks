@@ -80,6 +80,7 @@ def read_blockwise_scipy_csr(X, obs_joinids, soma_chunk, var_slice, log):
 @click.option('-V', '--n_vars', default=20_000, type=int)
 @click.argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
 def read_chunks(soma_chunk_size, py_buffer_size, rng_seed, shuffle, soma_buffer_size, n_vars, verbose, uri):
+    """Benchmark TileDB-SOMA "chunk" reads, generating various matrix formats, and optionally shuffling data."""
     var_slice = slice(0, n_vars - 1)
     with soma.open(f'{uri}/obs') as obs:
         df = obs.read(column_names=['soma_joinid']).concat().to_pandas()

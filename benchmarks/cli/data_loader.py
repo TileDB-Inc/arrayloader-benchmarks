@@ -20,12 +20,13 @@ from tiledbsoma.stats import profile, stats
 @click.option('-S', '--soma-buffer-size', default=1024**3, type=int)
 @click.argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
 def data_loader(batch_size, soma_chunk_size, no_cuda_conversion, num_epochs, gc_freq, py_buffer_size, output_scipy, soma_buffer_size, uri):
+    """Benchmark loading batches into PyTorch, from a TileDB-SOMA experiment."""
     tiledb_config = {
         "py.init_buffer_bytes": py_buffer_size,
         "soma.init_buffer_bytes": soma_buffer_size,
     }
     if output_scipy == 0:
-        fmt: Fmt = 'arrow.coo'
+        fmt: Fmt = 'np.array'
     elif output_scipy == 1:
         fmt: Fmt = 'scipy.coo'
     elif output_scipy == 2:
