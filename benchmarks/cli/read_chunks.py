@@ -70,8 +70,8 @@ def read_blockwise_scipy_csr(X, obs_joinids, soma_chunk, var_slice, log):
     return total_read
 
 
-@cli.command()
-@click.option('-c', '--soma-chunk', default=10_000, type=int)
+@cli.command('read-chunks')
+@click.option('-c', '--soma-chunk-size', default=10_000, type=int)
 @click.option('-P', '--py-buffer-size', default=1024**3, type=int)
 @click.option('-r', '--rng-seed', type=int)
 @click.option('-s', '--shuffle', count=True, help='1x: chunk shuffle, 2x: global shuffle')
@@ -79,15 +79,15 @@ def read_blockwise_scipy_csr(X, obs_joinids, soma_chunk, var_slice, log):
 @click.option('-v', '--verbose', is_flag=True, help='Print stats about each chunk read to stderr')
 @click.option('-V', '--n_vars', default=20_000, type=int)
 @click.argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
-def benchmark(soma_chunk, py_buffer_size, rng_seed, shuffle, soma_buffer_size, n_vars, verbose, uri):
+def read_chunks(soma_chunk_size, py_buffer_size, rng_seed, shuffle, soma_buffer_size, n_vars, verbose, uri):
     var_slice = slice(0, n_vars - 1)
     with soma.open(f'{uri}/obs') as obs:
         df = obs.read(column_names=['soma_joinid']).concat().to_pandas()
     obs_joinids = df.soma_joinid.to_numpy()
 
     if shuffle == 1:
-        for idx in range(0, len(obs_joinids), soma_chunk):
-            np.random.default_rng(seed=rng_seed).shuffle(obs_joinids[idx: idx + soma_chunk])
+        for idx in range(0, len(obs_joinids), soma_chunk_size):
+            np.random.default_rng(seed=rng_seed).shuffle(obs_joinids[idx: idx + soma_chunk_size])
     elif shuffle == 2:
         np.random.default_rng(seed=rng_seed).shuffle(obs_joinids)
 
@@ -112,7 +112,7 @@ def benchmark(soma_chunk, py_buffer_size, rng_seed, shuffle, soma_buffer_size, n
         ]:
             name = fn.__name__
             t = time.perf_counter()
-            total = fn(X, obs_joinids, soma_chunk=soma_chunk, var_slice=var_slice, log=log)
+            total = fn(X, obs_joinids, soma_chunk=soma_chunk_size, var_slice=var_slice, log=log)
             if total_read is not None and total != total_read:
                 raise ValueError(f"{name} didn't read expected/previous number of elems: {total} != {total_read}")
             total_read = total

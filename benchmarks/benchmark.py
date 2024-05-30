@@ -45,7 +45,8 @@ def benchmark(
         batch_size: int = 1024,
         gc_freq: Optional[int] = None,
         exclude_first_batch: bool = True,
-        progress_bar: bool = True
+        progress_bar: bool = True,
+        ensure_cuda: bool = True,
 ) -> Epoch:
     n_samples = exp.datapipe.shape[0]
     loader_iter = exp.loader.__iter__()
@@ -67,7 +68,7 @@ def benchmark(
         X = batch["x"] if isinstance(batch, dict) else batch[0]
         # for pytorch DataLoader
         # Merlin sends to cuda by default
-        if hasattr(X, "is_cuda") and not X.is_cuda:
+        if ensure_cuda and hasattr(X, "is_cuda") and not X.is_cuda:
             X = X.cuda()
 
         if num_iter is not None and i == num_iter:
@@ -92,4 +93,8 @@ def benchmark(
     samples_per_sec = total * batch_size / execution_time
     print(f'samples per sec: {samples_per_sec:.2f} samples/sec')
 
-    return Epoch(samples_per_sec=samples_per_sec, time_per_sample=time_per_sample, batches=batches)
+    return Epoch(
+        samples_per_sec=samples_per_sec,
+        time_per_sample=time_per_sample,
+        batches=batches,
+    )

@@ -30,7 +30,7 @@ aws s3 sync s3://rw-tdb-west2/arrayloader-benchmarks/$dst $dst
 
 No shuffle:
 ```bash
-alb benchmark data/census-benchmark_2:4
+alb read-chunks data/census-benchmark_2:4
 # read_table elapsed: 1.43s
 # read_blockwise_table elapsed: 2.33s
 # read_blockwise_scipy_coo elapsed: 10.36s
@@ -39,7 +39,7 @@ alb benchmark data/census-benchmark_2:4
 
 Intra-chunk shuffle:
 ```bash
-alb benchmark -s data/census-benchmark_2:4
+alb read-chunks -s data/census-benchmark_2:4
 # read_table elapsed: 1.50s
 # read_blockwise_table elapsed: 2.70s
 # read_blockwise_scipy_coo elapsed: 12.83s
@@ -48,7 +48,7 @@ alb benchmark -s data/census-benchmark_2:4
 
 Global shuffle:
 ```bash
-alb benchmark -ss data/census-benchmark_2:4
+alb read-chunks -ss data/census-benchmark_2:4
 # read_table elapsed: 21.04s
 # read_blockwise_table elapsed: 21.47s
 # read_blockwise_scipy_coo elapsed: 35.60s
