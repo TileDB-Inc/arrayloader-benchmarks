@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Execute a notebook with Papermill, normalize output / strip resulting metadata, to ensure a deterministic output
+# notebook:
+#
+# - Remove execution-specific timing metadata injected by Papermill
+# - Reindent the notebook using one space (to match Jupyter's default)
+#
+# Adapted from https://github.com/ryan-williams/py-helpers/blob/616d2c3862dd789e1658e48a304ccdfea915f93a/.jupyter-rc#L235-L251
+
+set -e
+
+clean_notebook() {
+    jq='.cells |= map(del(.id) | .metadata |= del(.papermill,.execution,.widgets)) | del(.metadata.papermill)'
+    if [ $# -eq 0 ]; then
+        cat | jq "$jq"
+    elif [ $# -eq 1 ]; then
+        out="$(mktemp)"
+        echo "Cleaning $1 in-place (temp file: $out)" >&2
+        jq "$jq" "$1" > "$out"
+        mv "$out" "$1"
+    elif [ $# -eq 2 ]; then
+        in="$1"; shift
+        out="$1"; shift
+        if [ -d "$out" ]; then
+            out="${out%/}/$(basename "$in")"
+        fi
+        echo "Cleaning $in, saving to $out" >&2
+        jq --indent 1 "$jq" "$in" > "$out"
+    else
+        echo "Usage: clean_notebook [path [out_path]]" >&2
+        return 1
+    fi
+}
+
+papermill_clean() {
+    if [ $# -lt 2 ]; then
+        echo "Usage: $0 [...papermill args] <notebook path> <output path>" >&2
+        return 1
+    fi
+    in="${@: -2:1}"
+    echo "in: ${in[*]}"
+    out="${@: -1}"
+    if [ -d "$out" ]; then
+        out="${out%/}/$(basename "$in")"
+    fi
+    args=("${@:1:(($#-2))}")
+    papermill "${args[@]}" "$in" "$out"
+    clean_notebook "$out"
+}
+
+papermill_clean "$@"
