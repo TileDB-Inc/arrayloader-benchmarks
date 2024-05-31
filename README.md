@@ -75,8 +75,9 @@ notebooks/data-loader-stats/run-nb.sh azl
 </details>
 
 ## Reading SOMA chunks with various "shuffle" strategies
+See [benchmarks/cli/read_chunks.py](benchmarks/cli/read_chunks.py):
 
-No shuffle:
+### No shuffle
 ```bash
 alb read-chunks data/census-benchmark_2:4
 # read_table elapsed: 1.43s
@@ -85,7 +86,7 @@ alb read-chunks data/census-benchmark_2:4
 # read_blockwise_scipy_csr elapsed: 13.92s
 ```
 
-Intra-chunk shuffle:
+### Intra-chunk shuffle
 ```bash
 alb read-chunks -s data/census-benchmark_2:4
 # read_table elapsed: 1.50s
@@ -94,7 +95,7 @@ alb read-chunks -s data/census-benchmark_2:4
 # read_blockwise_scipy_csr elapsed: 19.29s
 ```
 
-Global shuffle:
+### Global shuffle
 ```bash
 alb read-chunks -ss data/census-benchmark_2:4
 # read_table elapsed: 21.04s
