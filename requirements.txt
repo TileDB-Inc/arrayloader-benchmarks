@@ -6,13 +6,14 @@ distributed==2023.9.2
 fsspec==2024.3.1
 jupyter
 kaleido
-merlin-core
+merlin-core==23.8.0
 merlin-dataloader
+pandas<1.6  # due to Merlin
 papermill
 plotly
 requests
 rich-click
 s3fs==2024.3.1
-sqlalchemy
+sqlalchemy<2  # due to Merlin's Pandas pin
 torch<2.3.0  # https://github.com/pytorch/data/issues/1244
 torchdata==0.7.1
