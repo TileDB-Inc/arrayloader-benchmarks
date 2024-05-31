@@ -16,7 +16,9 @@ class Exp:
 
 @dataclass
 class Batch:
-    batch: float
+    elapsed: float
+    n_rows: int
+    n_cols: int
     gc: Optional[float] = None
 
 
@@ -82,7 +84,8 @@ def benchmark(
             gc.collect()
             gc_time = time() - gc_before
 
-        batches.append(Batch(batch_elapsed, gc_time))
+        n_rows, n_cols = X.shape
+        batches.append(Batch(elapsed=batch_elapsed, n_rows=n_rows, n_cols=n_cols, gc=gc_time))
         batch_time = time()
 
     execution_time = time() - start_time

@@ -13,5 +13,6 @@ plotly
 requests
 rich-click
 s3fs==2024.3.1
+sqlalchemy
 torch<2.3.0  # https://github.com/pytorch/data/issues/1244
 torchdata==0.7.1
