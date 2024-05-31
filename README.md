@@ -109,6 +109,6 @@ alb read-chunks -ss data/census-benchmark_2:4
 [cellxgene-census]: cellxgene-census
 [tiledb-soma]: tiledb-soma
 
-[np.array source]: https://github.com/ryan-williams/cellxgene-census/blob/a664b41d1aa05693e5b55da63b5173d89125dc80/api/python/cellxgene_census/src/cellxgene_census/experimental/ml/pytorch.py#L133-L141
-[scipy.coo source]: https://github.com/ryan-williams/cellxgene-census/blob/a664b41d1aa05693e5b55da63b5173d89125dc80/api/python/cellxgene_census/src/cellxgene_census/experimental/ml/pytorch.py#L399-L406
-[scipy.csr source]: https://github.com/ryan-williams/cellxgene-census/blob/a664b41d1aa05693e5b55da63b5173d89125dc80/api/python/cellxgene_census/src/cellxgene_census/experimental/ml/pytorch.py#L226
+[np.array source]: https://github.com/ryan-williams/cellxgene-census/blob/0f66b12f4fe75f28d5ab23ea8c078faa84b76963/api/python/cellxgene_census/src/cellxgene_census/experimental/ml/pytorch.py#L113-L121
+[scipy.coo source]: https://github.com/ryan-williams/cellxgene-census/blob/0f66b12f4fe75f28d5ab23ea8c078faa84b76963/api/python/cellxgene_census/src/cellxgene_census/experimental/ml/pytorch.py#L372-L379
+[scipy.csr source]: https://github.com/ryan-williams/cellxgene-census/blob/0f66b12f4fe75f28d5ab23ea8c078faa84b76963/api/python/cellxgene_census/src/cellxgene_census/experimental/ml/pytorch.py#L202
