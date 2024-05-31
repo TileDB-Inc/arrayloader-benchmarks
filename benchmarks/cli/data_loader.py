@@ -1,5 +1,6 @@
-from socket import gethostname
 from getpass import getuser
+from os.path import join
+from socket import gethostname
 from subprocess import check_output, check_call, CalledProcessError
 
 import click
@@ -7,15 +8,14 @@ import pandas as pd
 
 from benchmarks.benchmark import benchmark, Exp
 from benchmarks.cli.base import cli
-
+from benchmarks.paths import DATA_LOADER_STATS_DIR
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
 from cellxgene_census.experimental.ml.pytorch import Fmt
 from tiledbsoma import SOMATileDBContext, Experiment
 from tiledbsoma.stats import profile, stats
 
-
 TBL = 'epochs'
-DEFAULT_DB_PATH = 'data-loader.db'
+DEFAULT_DB_PATH = join(DATA_LOADER_STATS_DIR, 'epochs.db')
 
 
 @cli.command()
