@@ -12,7 +12,7 @@ from benchmarks.paths import DATA_LOADER_STATS_DIR
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
 from cellxgene_census.experimental.ml.pytorch import Fmt
 from tiledbsoma import SOMATileDBContext, Experiment
-from tiledbsoma.stats import profile, stats
+from tiledbsoma.stats import profile
 
 TBL = 'epochs'
 DEFAULT_DB_PATH = join(DATA_LOADER_STATS_DIR, 'epochs.db')
@@ -123,12 +123,3 @@ def data_loader(
             records_df.to_sql(TBL, db_uri, if_exists='append', index=False)
 
         print(records_df)
-        exp_stats = datapipe.stats()
-        checkpoints_df = exp_stats.checkpoints_df()
-        print("Checkpoints total:")
-        print(f"{checkpoints_df.sum()}s")
-        print()
-
-        timers_df, counters_df = stats.dfs
-        print(f"Timers total: {timers_df['sum'].sum()}s")
-        print(timers_df.groupby('name')['sum'].sum())
