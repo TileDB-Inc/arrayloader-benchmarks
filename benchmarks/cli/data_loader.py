@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from socket import gethostname
 from getpass import getuser
 from subprocess import check_output, check_call, CalledProcessError
@@ -15,7 +14,7 @@ from tiledbsoma import SOMATileDBContext, Experiment
 from tiledbsoma.stats import profile, stats
 
 
-TBL = 'data-loader'
+TBL = 'epochs'
 DEFAULT_DB_PATH = 'data-loader.db'
 
 
@@ -108,16 +107,14 @@ def data_loader(
                     gc_freq=gc_freq,
                     ensure_cuda=not no_cuda_conversion,
                 )
-            records += [
-                dict(
-                    start=start,
-                    epoch=epoch_idx,
-                    batch=idx,
-                    **asdict(batch),
-                    **metadata_dict,
-                )
-                for idx, batch in enumerate(epoch.batches)
-            ]
+            records.append(dict(
+                start=start,
+                epoch=epoch_idx,
+                n_rows=epoch.n_rows,
+                elapsed=epoch.elapsed,
+                gc=epoch.gc,
+                **metadata_dict,
+            ))
             epochs.append(epoch_idx)
 
         records_df = pd.DataFrame(records)

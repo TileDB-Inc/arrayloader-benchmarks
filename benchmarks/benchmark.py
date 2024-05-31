@@ -24,8 +24,9 @@ class Batch:
 
 @dataclass
 class Epoch:
-    time_per_sample: float
-    samples_per_sec: float
+    n_rows: int
+    elapsed: float
+    gc: float
     batches: list[Batch]
 
 
@@ -93,11 +94,14 @@ def benchmark(
 
     time_per_sample = (1e6 * execution_time) / (total * batch_size)
     print(f'time per sample: {time_per_sample:.2f} μs')
-    samples_per_sec = total * batch_size / execution_time
+    total_rows = sum(batch.n_rows for batch in batches)
+    total_gc = sum(batch.gc or 0 for batch in batches)
+    samples_per_sec = total_rows / execution_time
     print(f'samples per sec: {samples_per_sec:.2f} samples/sec')
 
     return Epoch(
-        samples_per_sec=samples_per_sec,
-        time_per_sample=time_per_sample,
+        n_rows=total_rows,
         batches=batches,
+        elapsed=execution_time,
+        gc=total_gc,
     )
