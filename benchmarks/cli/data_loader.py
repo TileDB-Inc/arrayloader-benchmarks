@@ -34,7 +34,7 @@ def parse_delimited_arg(delim: str = ',', choices: Optional[list[str]] = None, t
     return _parse_delimited_arg
 
 
-FMTS = ['np.array', 'scipy.coo', 'scipy.csr']
+METHODS = ['np.array', 'scipy.coo', 'scipy.csr']
 
 
 @cli.command()
@@ -44,7 +44,7 @@ FMTS = ['np.array', 'scipy.coo', 'scipy.csr']
 @click.option('-d', '--db-path', default=DEFAULT_DB_PATH, help=f'Insert a row in this SQLite database with the samples/sec and other -m/--metadata; defaults to {DEFAULT_DB_PATH}, disable with -D/--no-db')
 @click.option('-D', '--no-db', is_flag=True, help=f"Don't insert timings into the default SQLite database ({DEFAULT_DB_PATH}).")
 @click.option('-e', '--num-epochs', default=1, type=int)
-@click.option('-f', '--format', 'fmts', callback=parse_delimited_arg(choices=FMTS, default=FMTS), help=f'Comma-delimited list of matrix conversion format pipelines to test; options: [{", ".join(FMTS)}], default is all')
+@click.option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
 @click.option('-g', '--gc-freq', default=10, type=int)
 @click.option('-m', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @click.option('-P', '--py-buffer-size', default=1024**3, type=int)
@@ -57,7 +57,7 @@ def data_loader(
         no_db,
         no_cuda_conversion,
         num_epochs,
-        fmts,
+        methods,
         gc_freq,
         metadata,
         py_buffer_size,
@@ -70,7 +70,7 @@ def data_loader(
         "soma.init_buffer_bytes": soma_buffer_size,
     }
 
-    print(f"{soma_chunk_sizes=}, {fmts=}")
+    print(f"{soma_chunk_sizes=}, {methods=}")
 
     context = SOMATileDBContext(tiledb_config=tiledb_config)
     sha = check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
@@ -80,7 +80,7 @@ def data_loader(
     except CalledProcessError:
         sha_str = f"{sha}-dirty"
 
-    for fmt in fmts:
+    for method in methods:
         for soma_chunk_size in soma_chunk_sizes:
             metadata_dict = {
                 'alb_start': pd.Timestamp.now(),
@@ -88,7 +88,7 @@ def data_loader(
                 'user': getuser(),
                 'hostname': gethostname(),
                 'uri': uri,
-                'fmt': fmt,
+                'method': method,
                 'batch_size': batch_size,
                 'soma_chunk_size': soma_chunk_size,
                 'py_buffer_size': py_buffer_size,
@@ -106,7 +106,7 @@ def data_loader(
                     batch_size=batch_size,
                     shuffle=True,
                     soma_chunk_size=soma_chunk_size,
-                    fmt=fmt,
+                    method=method,
                 )
 
                 loader = experiment_dataloader(datapipe)
