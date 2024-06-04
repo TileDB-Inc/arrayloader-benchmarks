@@ -12,4 +12,7 @@ fi
 out_dir="$1"; shift
 mkdir -p "$out_dir"
 
-../papermill-clean -p out_dir $out_dir nb.ipynb $out_dir/nb.ipynb
+nb="nb.ipynb"
+out_nb="$out_dir/$nb"
+papermill -p out_dir $out_dir -p show png "$nb" "$out_nb"
+juq papermill-clean -i "$out_nb"
