@@ -6,9 +6,10 @@ This fork of [laminlabs/arrayloader-benchmarks] digs further into timings from "
 Install this library, as well as [cellxgene-census] and [tiledb-soma] Git submodules:
 
 ```bash
-pip install -e cellxgene-census/api/python/cellxgene_census
-pip install -e tiledb-soma/apis/python
-pip install -e .
+pip install \
+  -e cellxgene-census/api/python/cellxgene_census \
+  -e tiledb-soma/apis/python \
+  -e .
 ```
 
 ## Prepare a local dataset
