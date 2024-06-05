@@ -25,6 +25,7 @@ class Batch:
 @dataclass
 class Epoch:
     n_rows: int
+    n_cols: int
     elapsed: float
     gc: float
     batches: list[Batch]
@@ -51,7 +52,7 @@ def benchmark(
         progress_bar: bool = True,
         ensure_cuda: bool = True,
 ) -> Epoch:
-    n_samples = exp.datapipe.shape[0]
+    n_samples, n_vars = exp.datapipe.shape
     loader_iter = exp.loader.__iter__()
     if exclude_first_batch:
         # Optionally exclude first batch from benchmark, as it may include setup time
@@ -101,6 +102,7 @@ def benchmark(
 
     return Epoch(
         n_rows=total_rows,
+        n_cols=n_vars,
         batches=batches,
         elapsed=execution_time,
         gc=total_gc,

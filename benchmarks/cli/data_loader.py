@@ -127,6 +127,7 @@ def data_loader(
                         start=start,
                         epoch=epoch_idx,
                         n_rows=epoch.n_rows,
+                        n_cols=epoch.n_cols,
                         elapsed=epoch.elapsed,
                         gc=epoch.gc,
                         max_mem=datapipe.max_process_mem_usage_bytes,
