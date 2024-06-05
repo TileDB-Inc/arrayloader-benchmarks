@@ -26,5 +26,6 @@ fi
 
 nb="nb.ipynb"
 out_nb="$out_dir/$nb"
+export UTZ_PLOT_SHOW=png
 papermill -p out_dir $out_dir -p show png -p hostname "$hostname" "$nb" "$out_nb"
 juq papermill-clean -i "$out_nb"
