@@ -12,7 +12,7 @@ from benchmarks.cli.base import cli
 from benchmarks.paths import DATA_LOADER_STATS_DIR
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
 from tiledbsoma import SOMATileDBContext, Experiment
-from tiledbsoma.stats import profile
+
 
 TBL = 'epochs'
 DEFAULT_DB_PATH = join(DATA_LOADER_STATS_DIR, 'epochs.db')
@@ -116,13 +116,12 @@ def data_loader(
                 records = []
                 for epoch_idx in range(num_epochs):
                     start = pd.Timestamp.now()
-                    with profile(f'benchmark-epoch{epoch_idx}'):
-                        epoch = benchmark(
-                            exp,
-                            batch_size=batch_size,
-                            gc_freq=gc_freq,
-                            ensure_cuda=not no_cuda_conversion,
-                        )
+                    epoch = benchmark(
+                        exp,
+                        batch_size=batch_size,
+                        gc_freq=gc_freq,
+                        ensure_cuda=not no_cuda_conversion,
+                    )
                     records.append(dict(
                         start=start,
                         epoch=epoch_idx,
