@@ -1,8 +1,9 @@
+from dataclasses import dataclass
 from getpass import getuser
 from os.path import join
 from socket import gethostname
 from subprocess import check_output, check_call, CalledProcessError
-from typing import Optional, Type
+from typing import Optional, Callable
 
 import click
 import pandas as pd
@@ -19,13 +20,18 @@ TBL = 'epochs'
 DEFAULT_DB_PATH = join(DATA_LOADER_STATS_DIR, 'epochs.db')
 
 
-def parse_delimited_arg(delim: str = ',', choices: Optional[list[str]] = None, type: Optional[Type] = None, default=None):
+def parse_delimited_arg(
+        delim: str = ',',
+        choices: Optional[list[str]] = None,
+        fn: Optional[Callable] = None,
+        default=None,
+):
     def _parse_delimited_arg(ctx, param, value):
         if value is None:
             return default
         values = value.split(delim)
-        if type is not None:
-            values = [type(v) for v in values]
+        if fn is not None:
+            values = [ fn(v) for v in values ]
         if choices is not None:
             for v in values:
                 if v not in choices:
@@ -38,15 +44,30 @@ def parse_delimited_arg(delim: str = ',', choices: Optional[list[str]] = None, t
 METHODS = ['np.array', 'scipy.coo', 'scipy.csr']
 
 
+@dataclass
+class Chunk:
+    size: int
+    num: int
+
+
+def parse_chunk_size(s: str) -> Chunk:
+    pcs = s.split("x")
+    if len(pcs) == 2:
+        return Chunk(int(pcs[0]), int(pcs[1]))
+    elif len(pcs) == 1:
+        Chunk(int(s), 1)
+    else:
+        raise ValueError(f"Invalid chunk size: {s}")
+
+
 @cli.command()
 @option('-b', '--batch-size', default=1024, type=int)
-@option('-c', '--soma-chunk-size', 'soma_chunk_sizes', callback=parse_delimited_arg(type=int, default=[10_000]), help='Comma-delimited list of chunk sizes to test; default is [10_000]', default='10_000')
+@option('-c', '--soma-chunk-size', 'soma_chunk_sizes', callback=parse_delimited_arg(fn=parse_chunk_size), help='Comma-delimited list of chunk sizes to test')
 @option('-C', '--no-cuda-conversion', is_flag=True)
 @option('-d', '--db-path', default=DEFAULT_DB_PATH, help=f'Insert a row in this SQLite database with the samples/sec and other -M/--metadata; defaults to {DEFAULT_DB_PATH}, disable with -D/--no-db')
 @option('-D', '--no-db', is_flag=True, help=f"Don't insert timings into the default SQLite database ({DEFAULT_DB_PATH}).")
 @option('-e', '--num-epochs', default=1, type=int)
 @option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
-@option('-n', '--shuffle-chunk-count', default=1, type=int)
 @option('-g', '--gc-freq', default=10, type=int)
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
@@ -59,7 +80,6 @@ def data_loader(
         no_db,
         no_cuda_conversion,
         num_epochs,
-        shuffle_chunk_count,
         methods,
         gc_freq,
         metadata,
@@ -84,7 +104,9 @@ def data_loader(
         sha_str = f"{sha}-dirty"
 
     for method in methods:
-        for soma_chunk_size in soma_chunk_sizes:
+        for chunk in soma_chunk_sizes:
+            soma_chunk_size = chunk.size
+            shuffle_chunk_count = chunk.num
             metadata_dict = {
                 'alb_start': pd.Timestamp.now(),
                 'sha': sha_str,
