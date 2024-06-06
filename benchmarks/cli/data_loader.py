@@ -6,6 +6,7 @@ from typing import Optional, Type
 
 import click
 import pandas as pd
+from click import option, argument
 
 from benchmarks.benchmark import benchmark, Exp
 from benchmarks.cli.base import cli
@@ -38,18 +39,19 @@ METHODS = ['np.array', 'scipy.coo', 'scipy.csr']
 
 
 @cli.command()
-@click.option('-b', '--batch-size', default=1024, type=int)
-@click.option('-c', '--soma-chunk-size', 'soma_chunk_sizes', callback=parse_delimited_arg(type=int, default=[10_000]), help='Comma-delimited list of chunk sizes to test; default is [10_000]', default='10_000')
-@click.option('-C', '--no-cuda-conversion', is_flag=True)
-@click.option('-d', '--db-path', default=DEFAULT_DB_PATH, help=f'Insert a row in this SQLite database with the samples/sec and other -m/--metadata; defaults to {DEFAULT_DB_PATH}, disable with -D/--no-db')
-@click.option('-D', '--no-db', is_flag=True, help=f"Don't insert timings into the default SQLite database ({DEFAULT_DB_PATH}).")
-@click.option('-e', '--num-epochs', default=1, type=int)
-@click.option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
-@click.option('-g', '--gc-freq', default=10, type=int)
-@click.option('-m', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
-@click.option('-P', '--py-buffer-size', default=1024**3, type=int)
-@click.option('-S', '--soma-buffer-size', default=1024**3, type=int)
-@click.argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
+@option('-b', '--batch-size', default=1024, type=int)
+@option('-c', '--soma-chunk-size', 'soma_chunk_sizes', callback=parse_delimited_arg(type=int, default=[10_000]), help='Comma-delimited list of chunk sizes to test; default is [10_000]', default='10_000')
+@option('-C', '--no-cuda-conversion', is_flag=True)
+@option('-d', '--db-path', default=DEFAULT_DB_PATH, help=f'Insert a row in this SQLite database with the samples/sec and other -M/--metadata; defaults to {DEFAULT_DB_PATH}, disable with -D/--no-db')
+@option('-D', '--no-db', is_flag=True, help=f"Don't insert timings into the default SQLite database ({DEFAULT_DB_PATH}).")
+@option('-e', '--num-epochs', default=1, type=int)
+@option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
+@option('-n', '--shuffle-chunk-count', default=1, type=int)
+@option('-g', '--gc-freq', default=10, type=int)
+@option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
+@option('-P', '--py-buffer-size', default=1024**3, type=int)
+@option('-S', '--soma-buffer-size', default=1024**3, type=int)
+@argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
 def data_loader(
         batch_size,
         soma_chunk_sizes,
@@ -57,6 +59,7 @@ def data_loader(
         no_db,
         no_cuda_conversion,
         num_epochs,
+        shuffle_chunk_count,
         methods,
         gc_freq,
         metadata,
@@ -91,6 +94,7 @@ def data_loader(
                 'method': method,
                 'batch_size': batch_size,
                 'soma_chunk_size': soma_chunk_size,
+                'shuffle_chunk_count': shuffle_chunk_count,
                 'py_buffer_size': py_buffer_size,
                 'soma_buffer_size': soma_buffer_size,
             }
@@ -106,6 +110,7 @@ def data_loader(
                     batch_size=batch_size,
                     shuffle=True,
                     soma_chunk_size=soma_chunk_size,
+                    shuffle_chunk_count=shuffle_chunk_count,
                     method=method,
                 )
 
