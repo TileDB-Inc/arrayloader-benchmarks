@@ -41,7 +41,7 @@ def parse_delimited_arg(
     return _parse_delimited_arg
 
 
-METHODS = ['np.array', 'scipy.coo', 'scipy.csr']
+METHODS = ['np.array', 'scipy.csr']
 
 
 @dataclass
