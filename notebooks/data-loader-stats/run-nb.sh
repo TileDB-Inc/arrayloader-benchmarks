@@ -19,9 +19,11 @@ mkdir -p "$out_dir"
 if [ "$out_dir" == m3 ]; then
     hostname=m3
     proportional_symbol_size=2em
+    host="M3 Mac"
 elif [ "$out_dir" == azl ]; then
     hostname=us-west-2
     proportional_symbol_size=1em
+    host="EC2 (g4dn.8xlarge)"
 else
     usage
 fi
@@ -32,6 +34,7 @@ export UTZ_PLOT_SHOW=png
 papermill \
     -p out_dir $out_dir \
     -p show png \
+    -p host "$host" \
     -p hostname "$hostname" \
     -p W 1200 -p H 800 \
     -p proportional_symbol_size $proportional_symbol_size \
