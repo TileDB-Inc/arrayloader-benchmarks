@@ -142,6 +142,7 @@ class BlockSpec:
 @option('-g', '--gc-freq', default=10, type=int)
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
+@option('-r', '--region', help="S3 region")
 @option('-S', '--soma-buffer-size', default=1024**3, type=int)
 @argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
 def data_loader(
@@ -155,6 +156,7 @@ def data_loader(
         gc_freq,
         metadata,
         py_buffer_size,
+        region,
         soma_buffer_size,
         uri,
 ):
@@ -163,6 +165,9 @@ def data_loader(
         "py.init_buffer_bytes": py_buffer_size,
         "soma.init_buffer_bytes": soma_buffer_size,
     }
+    if region:
+        tiledb_config["vfs.s3.region"] = region
+
 
     err(f"{methods=}")
     err("Block specs:\n\t%s\n" % "\n\t".join(map(repr, block_specs)))
