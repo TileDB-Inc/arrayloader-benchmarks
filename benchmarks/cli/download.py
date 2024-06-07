@@ -1,12 +1,11 @@
 from subprocess import check_output
 
-from click import option
-
-from benchmarks import err
-from benchmarks.cli.base import cli
-
 import cellxgene_census
+from click import option
+from utz import err
+
 from benchmarks.census import download_datasets, get_datasets
+from benchmarks.cli.base import cli
 
 
 @cli.command()

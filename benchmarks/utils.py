@@ -29,11 +29,11 @@ import pyarrow as pa
 import pandas as pd
 import requests
 from tqdm import tqdm
+from utz import err, silent
 
 # Other local files
 from benchmarks import census
 from benchmarks.census import *
-from benchmarks.err import *
 from benchmarks.plot import *
 from tiledbsoma.stats import *
 

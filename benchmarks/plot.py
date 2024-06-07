@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 
 default_colors = plotly.colors.DEFAULT_PLOTLY_COLORS
 
-from err import err
+from utz import err
 
 from IPython.display import Image, Markdown
 

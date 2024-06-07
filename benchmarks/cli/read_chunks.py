@@ -1,4 +1,3 @@
-from benchmarks import err
 from benchmarks.cli.base import cli
 
 import click
@@ -6,8 +5,7 @@ import click
 import tiledbsoma as soma
 import numpy as np
 import time
-
-from benchmarks.err import silent
+from utz import err, silent
 
 
 def read_table(X, obs_joinids, soma_chunk, var_slice, log):

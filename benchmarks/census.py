@@ -10,7 +10,7 @@ from somacore import ExperimentAxisQuery, AxisQuery
 import tiledbsoma
 from tiledbsoma import Experiment, Measurement
 
-from benchmarks.err import err
+from utz import err
 from tiledbsoma.stats import stats
 
 
