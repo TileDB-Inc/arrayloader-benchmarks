@@ -127,6 +127,9 @@ class BlockSpec:
                 raise ValueError(f"block_size {block_size} != chunks_per_block {chunks_per_block} * chunk_size {chunk_size}")
         return BlockSpec(chunks_per_block=chunks_per_block, chunk_size=chunk_size, block_size=block_size)
 
+    def __repr__(self):
+        return f"{self.chunks_per_block}x{self.chunk_size} ({self.block_size})"
+
 
 @cli.command()
 @option('-b', '--block-specs', callback=lambda ctx, param, value: BlockSpec.parse(value), multiple=True, help='Block/Chunk sizes to test, e.g. "131072/[1,2048]", "2048x64"')
@@ -162,9 +165,7 @@ def data_loader(
     }
 
     err(f"{methods=}")
-    err("Block specs:")
-    json.dump(list(map(asdict, block_specs)), stderr, indent=2)
-    err()
+    err("Block specs:\n\t%s\n" % "\n\t".join(map(repr, block_specs)))
 
     context = SOMATileDBContext(tiledb_config=tiledb_config)
     sha = check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
@@ -175,8 +176,9 @@ def data_loader(
         sha_str = f"{sha}-dirty"
 
     alb_start = pd.Timestamp.now()
-    for method in methods:
-        for block_spec in block_specs:
+    for block_spec in block_specs:
+        for method in methods:
+            err(f"Running {method=}, {block_spec=}")
             soma_chunk_size = block_spec.chunk_size
             shuffle_chunk_count = block_spec.chunks_per_block
             metadata_dict = {
@@ -238,4 +240,4 @@ def data_loader(
                     db_uri = f"sqlite:///{db_path}"
                     records_df.to_sql(TBL, db_uri, if_exists='append', index=False)
 
-                print(records_df)
+                err(records_df)

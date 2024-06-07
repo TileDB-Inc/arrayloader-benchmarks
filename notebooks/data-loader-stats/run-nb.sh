@@ -17,12 +17,10 @@ out_dir="$1"; shift
 mkdir -p "$out_dir"
 
 if [ "$out_dir" == m3 ]; then
-    hostname=m3
-    proportional_symbol_size=2em
+    hostname_rgx=m3
     host="M3 Mac"
 elif [ "$out_dir" == azl ]; then
-    hostname=us-west-2
-    proportional_symbol_size=1em
+    hostname_rgx=us-west-2
     host="EC2 (g4dn.8xlarge)"
 else
     usage
@@ -35,8 +33,8 @@ papermill \
     -p out_dir $out_dir \
     -p show png \
     -p host "$host" \
-    -p hostname "$hostname" \
+    -p hostname_rgx "$hostname_rgx" \
     -p W 1200 -p H 800 \
-    -p proportional_symbol_size $proportional_symbol_size \
+    -p since 2024-07-01 \
     "$nb" "$out_nb"
 juq papermill-clean -i "$out_nb"
