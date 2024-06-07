@@ -102,7 +102,7 @@ def plot(
         log("Returning Plotly Figure")
         return fig
     elif fmt == 'md':
-        if not 'png' in c.save:
+        if 'png' not in c.save:
             raise ValueError(f"Can't return markdown as `png` wasn't included in `save`")
         log("Returning IPython Markdown")
         return Markdown(f'![]({mkpath("png")})')

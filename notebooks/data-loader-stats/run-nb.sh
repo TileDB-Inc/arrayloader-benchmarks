@@ -26,6 +26,7 @@ else
     usage
 fi
 
+since='2024-06-07 11:00'
 nb="nb.ipynb"
 out_nb="$out_dir/$nb"
 export UTZ_PLOT_SHOW=png
@@ -34,7 +35,6 @@ papermill \
     -p show png \
     -p host "$host" \
     -p hostname_rgx "$hostname_rgx" \
-    -p W 1200 -p H 800 \
-    -p since 2024-07-01 \
+    -p since "$since" \
     "$nb" "$out_nb"
 juq papermill-clean -i "$out_nb"
