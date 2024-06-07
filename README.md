@@ -58,9 +58,14 @@ alb data-loader -e6 -c 1024,2048,4096,8192,16384,32768 $dst
 - 6 epochs each (130 batches x 1024 samples per batch; ≈130k samples in `census-benchmark_2:7`)
 - 6 SOMA chunk sizes (1024, 2048, 4096, 8192, 16384, 32768)
 
-Sweep chunk size/counts (totaling 2^15 rows per shuffled chunk):
+Sweep chunk size/counts:
 ```bash
-alb data-loader -e5 -C -c 64x512,128x256,256x128,512x64,1024x32,2048x16,4096x8,8192x4,16384x2 data/census-benchmark_2:7
+# 2^13 rows per shuffled chunk
+alb data-loader -e5 -C -c 64x128,128x64,256x32,512x16,1024x8,2048x4,4096x2,8192x1 $dst
+# 2^14 rows per shuffled chunk
+alb data-loader -e5 -C -c 64x256,128x128,256x64,512x32,1024x16,2048x8,4096x4,8192x2,16384x1 $dst
+# 2^15 rows per shuffled chunk
+alb data-loader -e5 -C -c 64x512,128x256,256x128,512x64,1024x32,2048x16,4096x8,8192x4,16384x2 $dst
 ```
 
 ### M3 Macbook benchmarks
