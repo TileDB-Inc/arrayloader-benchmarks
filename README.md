@@ -61,11 +61,11 @@ alb data-loader -e6 -c 1024,2048,4096,8192,16384,32768 $dst
 Sweep chunk size/counts:
 ```bash
 # 2^13 rows per shuffled chunk
-alb data-loader -e5 -C -c 64x128,128x64,256x32,512x16,1024x8,2048x4,4096x2,8192x1 $dst
+alb data-loader -e5 -c 64x128,128x64,256x32,512x16,1024x8,2048x4,4096x2,8192x1 $dst
 # 2^14 rows per shuffled chunk
-alb data-loader -e5 -C -c 64x256,128x128,256x64,512x32,1024x16,2048x8,4096x4,8192x2,16384x1 $dst
+alb data-loader -e5 -c 64x256,128x128,256x64,512x32,1024x16,2048x8,4096x4,8192x2,16384x1 $dst
 # 2^15 rows per shuffled chunk
-alb data-loader -e5 -C -c 64x512,128x256,256x128,512x64,1024x32,2048x16,4096x8,8192x4,16384x2 $dst
+alb data-loader -e5 -c 64x512,128x256,256x128,512x64,1024x32,2048x16,4096x8,8192x4,16384x2 $dst
 ```
 
 ### M3 Macbook benchmarks

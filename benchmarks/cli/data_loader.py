@@ -103,12 +103,13 @@ def data_loader(
     except CalledProcessError:
         sha_str = f"{sha}-dirty"
 
+    alb_start = pd.Timestamp.now()
     for method in methods:
         for chunk in soma_chunk_sizes:
             soma_chunk_size = chunk.size
             shuffle_chunk_count = chunk.num
             metadata_dict = {
-                'alb_start': pd.Timestamp.now(),
+                'alb_start': alb_start,
                 'sha': sha_str,
                 'user': getuser(),
                 'hostname': gethostname(),
