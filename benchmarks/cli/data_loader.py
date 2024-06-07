@@ -75,7 +75,7 @@ class BlockSpec:
     chunk_size: int
     block_size: int  # chunk_size * chunks_per_block
 
-    CHUNKS_RGX = re.compile(r'(?P<block_chunks>\d+)x(?P<chunk_size>\d+)')
+    CHUNKS_RGX = re.compile(r'(?:(?P<block_chunks>\d+)x)?(?P<chunk_size>\d+)')
     CHUNKS_PER_BLOCK_RGX = re.compile(r'(?P<block_size>\d+) */ *(?:(?P<block_chunks>\d+)|\[(?P<block_chunks_start>\d+), *(?P<block_chunks_stop>\d+)])')
 
     @classmethod
@@ -89,7 +89,7 @@ class BlockSpec:
         m = cls.CHUNKS_RGX.fullmatch(s)
         if m is not None:
             return [ BlockSpec.make(
-                chunks_per_block=int(m.group('block_chunks')),
+                chunks_per_block=int(m.group('block_chunks') or 1),
                 chunk_size=int(m.group('chunk_size')),
             ) ]
         m = cls.CHUNKS_PER_BLOCK_RGX.fullmatch(s)
