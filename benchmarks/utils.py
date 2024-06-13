@@ -35,14 +35,12 @@ from utz import err, silent
 from benchmarks import census
 from benchmarks.census import *
 from benchmarks.plot import *
+import cellxgene_census
 from tiledbsoma.stats import *
 
 
-collection_id = '283d65eb-dd53-496d-adb7-7570c7caa443'
-
-
-def get_datasets(_census, collection_id=collection_id, profile=None):
-    return census.get_datasets(census=_census, collection_id=collection_id, profile=profile)
+def get_dataset_ids(_census, collection_id=COLLECTION_ID, profile=None):
+    return census.get_dataset_ids(census=_census, collection_id=collection_id, profile=profile)
 
 
 def get_region():

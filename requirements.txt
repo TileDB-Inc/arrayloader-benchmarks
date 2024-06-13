@@ -6,6 +6,7 @@ dask[dataframe]==2023.9.2
 distributed==2023.9.2
 fsspec==2024.3.1
 jupyter
+jupyter-server==2.12.5  # https://github.com/jupyter/nbdime/issues/749; fix should be in nbdime>4.0.1 (as yet not released)
 juq.py
 kaleido
 merlin-core==23.8.0

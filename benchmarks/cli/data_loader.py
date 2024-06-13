@@ -1,11 +1,9 @@
-import json
 import re
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from getpass import getuser
 from os.path import join
 from socket import gethostname
 from subprocess import check_output, check_call, CalledProcessError
-from sys import stderr
 from typing import Optional, Callable, Tuple
 
 import click
@@ -167,7 +165,6 @@ def data_loader(
     }
     if region:
         tiledb_config["vfs.s3.region"] = region
-
 
     err(f"{methods=}")
     err("Block specs:\n\t%s\n" % "\n\t".join(map(repr, block_specs)))

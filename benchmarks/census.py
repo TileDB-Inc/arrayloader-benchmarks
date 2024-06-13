@@ -4,29 +4,33 @@ from os.path import join, exists
 from shutil import rmtree
 from typing import Optional
 
+import pandas as pd
 import pyarrow as pa
+from utz import err
 
+from benchmarks import COLLECTION_ID
 from somacore import ExperimentAxisQuery, AxisQuery
 import tiledbsoma
 from tiledbsoma import Experiment, Measurement
-
-from utz import err
 from tiledbsoma.stats import stats
 
 
-def get_datasets(census, collection_id, profile=None):
+def get_datasets_df(census, collection_id=COLLECTION_ID, profile=None) -> pd.DataFrame:
     with stats.collect(profile) if profile else nullcontext():
         return (
             census["census_info"]["datasets"]
-            .read(
-                column_names=["dataset_id"],
-                value_filter=f"collection_id == '{collection_id}'",
-            )
+            .read(value_filter=f"collection_id == '{collection_id}'")
             .concat()
             .to_pandas()
-            ["dataset_id"]
-            .tolist()
         )
+
+
+def get_dataset_ids(*args, **kwargs):
+    return (
+        get_datasets_df(*args, **kwargs)
+        ["dataset_id"]
+        .tolist()
+    )
 
 
 def subset_census(query: ExperimentAxisQuery, output_base_dir: str) -> None:
@@ -61,7 +65,7 @@ def subset_census(query: ExperimentAxisQuery, output_base_dir: str) -> None:
 
 
 def download_datasets(
-        experiment: Experiment,
+        exp: Experiment,
         datasets: list[str],
         out_dir: str,
         start: Optional[int] = None,
@@ -72,7 +76,7 @@ def download_datasets(
     ds = datasets[slice(start, end)]
     err(f"Downloading {len(ds)} datasets:\n\t%s" % "\n\t".join(ds))
     datasets_query = f'dataset_id in {ds}'
-    query = experiment.axis_query(
+    query = exp.axis_query(
         "RNA",
         obs_query=AxisQuery(value_filter=datasets_query),
         var_query=AxisQuery(coords=(slice(n_vars - 1),)) if n_vars else None,
