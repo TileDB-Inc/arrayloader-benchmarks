@@ -1,9 +1,9 @@
 # arrayloader-benchmarks notebooks
 
-## data-loader-stats
-See [data-loader-stats.ipynb](data-loader-stats.ipynb), and outputs in [data-loader-stats/](data-loader-stats/).
+## data-loader
+See [data-loader.ipynb](data-loader.ipynb), and outputs in [data-loader/](data-loader/).
 
-![](data-loader-stats/azl.png)
+![](data-loader/azl.png)
 
 ## data-locality benchmarking
 See [benchmark.md](benchmark.md), [benchmark.ipynb](benchmark.ipynb), [benchmarks/](benchmarks).
