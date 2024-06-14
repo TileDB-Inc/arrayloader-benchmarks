@@ -1,7 +1,6 @@
 import re
 from dataclasses import dataclass
 from getpass import getuser
-from os.path import join
 from socket import gethostname
 from subprocess import check_output, check_call, CalledProcessError
 from typing import Optional, Callable, Tuple
@@ -181,8 +180,8 @@ def data_loader(
     for block_spec in block_specs:
         for method in methods:
             err(f"Running {method=}, {block_spec=}")
-            soma_chunk_size = block_spec.chunk_size
-            shuffle_chunk_count = block_spec.chunks_per_block
+            chunk_size = block_spec.chunk_size
+            chunks_per_block = block_spec.chunks_per_block
             metadata_dict = {
                 'alb_start': alb_start,
                 'sha': sha_str,
@@ -191,8 +190,9 @@ def data_loader(
                 'uri': uri,
                 'method': method,
                 'batch_size': batch_size,
-                'soma_chunk_size': soma_chunk_size,
-                'shuffle_chunk_count': shuffle_chunk_count,
+                'chunk_size': chunk_size,
+                'chunks_per_block': chunks_per_block,
+                'block_size': block_spec.block_size,
                 'py_buffer_size': py_buffer_size,
                 'soma_buffer_size': soma_buffer_size,
             }
@@ -207,8 +207,8 @@ def data_loader(
                     X_name="raw",
                     batch_size=batch_size,
                     shuffle=True,
-                    soma_chunk_size=soma_chunk_size,
-                    shuffle_chunk_count=shuffle_chunk_count,
+                    soma_chunk_size=chunk_size,
+                    shuffle_chunk_count=chunks_per_block,
                     method=method,
                 )
 
