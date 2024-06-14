@@ -8,19 +8,19 @@ from typing import Optional, Callable, Tuple
 
 import click
 import pandas as pd
+
+from benchmarks.data_loader.paths import DEFAULT_DB_PATH
 from cellxgene_census.experimental.ml.pytorch import METHODS
 from click import option, argument
 from utz import err
 
 from benchmarks.benchmark import benchmark, Exp
 from benchmarks.cli.base import cli
-from benchmarks.paths import DATA_LOADER_STATS_DIR
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
 from tiledbsoma import SOMATileDBContext, Experiment
 
 
 TBL = 'epochs'
-DEFAULT_DB_PATH = join(DATA_LOADER_STATS_DIR, 'epochs.db')
 
 
 def parse_delimited_arg(
