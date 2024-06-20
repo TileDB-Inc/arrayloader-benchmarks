@@ -13,6 +13,7 @@ from utz import err
 from benchmarks.benchmark import benchmark, Exp
 from benchmarks.cli.base import cli, slice_opts
 from benchmarks.data_loader.paths import DEFAULT_DB_PATH
+from benchmarks.ec2 import ec2_instance_id
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
 from cellxgene_census.experimental.ml.pytorch import METHODS
 from tiledbsoma import SOMATileDBContext, Experiment
@@ -216,6 +217,9 @@ def data_loader(
                 k: v for k, v in
                 (m.split('=', 1) for m in metadata)
             })
+            instance_id = ec2_instance_id()
+            if instance_id:
+                metadata_dict['instance_id'] = instance_id
             if exp_fn:
                 experiment = exp_fn()
             else:
