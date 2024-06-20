@@ -13,9 +13,9 @@ collection_id_opt = option('-c', '--collection-id', default=COLLECTION_ID, help=
 census_uri_opt = option('-u', '--census-uri', help="Optional Census URI override, default is determined by -V/--census-version")
 census_version_opt = option('-V', '--census-version', default="2023-12-15")
 
-start_opt = option('-s', '--start', default=2, help='Slice datasets from `collection_id` starting from this index')
+start_opt = option('-s', '--start', default=0, help='Slice datasets from `collection_id` starting from this index')
 sorted_datasets_flag = option('-S', '--sorted-datasets', is_flag=True, help='Sort datasets (from `collection_id`) by `dataset_total_cell_count` before slicing')
-end_opt = option('-e', '--end', default=7, help='Slice datasets from `collection_id` ending at this index')
+end_opt = option('-e', '--end', type=int, help='Slice datasets from `collection_id` ending at this index')
 n_vars_opt = option('-v', '--n-vars', default=20_000, help='Slice the first `n_vars` vars')
 
 
@@ -41,15 +41,11 @@ def slice_opts(fn):
         if start is not None or end is not None:
             census = cellxgene_census.open_soma(uri=census_uri, census_version=census_version)
             dataset_ids = get_dataset_ids(census, collection_id, sort_values='dataset_total_cell_count' if sorted_datasets else None)
-            print(f'Found {len(dataset_ids)} total datasets: {dataset_ids[:10]}')
+            print(f'Found {len(dataset_ids)} total datasets: {dataset_ids[:10]}… slicing [{start},{end})')
             ds = dataset_ids[slice(start, end)]
             datasets_query = f'dataset_id in {ds}'
             if 'query' in spec.args:
                 experiment = census["census_data"]["homo_sapiens"]
-                dataset_ids = get_dataset_ids(census, collection_id, sort_values='dataset_total_cell_count' if sorted_datasets else None)
-                print(f'Found {len(dataset_ids)} total datasets: {dataset_ids[:10]}')
-                ds = dataset_ids[slice(start, end)]
-                err(f"Downloading {len(ds)} datasets:\n\t%s" % "\n\t".join(ds))
                 fn_kwargs['query'] = axis_query(experiment, dataset_ids, start=start, end=end, n_vars=n_vars)
             else:
                 def exp_fn():
