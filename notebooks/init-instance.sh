@@ -4,7 +4,7 @@
 # README.md for more info.
 #
 # ```bash
-# . <(curl https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/init-instance.sh)
+# . <(curl https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/notebooks/init-instance.sh)
 # ```
 
 set -ex
@@ -87,6 +87,7 @@ install_conda
 ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
 git clone -b "$branch" --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
+echo "cd arrayloader-benchmarks" >> ~/.bash_profile
 
 # Install/Configure Conda+env
 env=arrayloader-benchmarks
@@ -96,15 +97,6 @@ echo "conda activate $env" >> ~/.bash_profile
 conda env list
 
 # Install this library (including editable tiledb-soma and cellxgene_census)
-pip install -e .
-
-# Export Census subset to data/census-benchmark_2:7
-nb=download-census-slice.ipynb
-mkdir out
-papermill $nb out/$nb
-
-# Run benchmark notebook on 133k cell Census subset located at data/census-benchmark_2:7
-# More info on parameters to this script below.
-./execute-nb subset-gp3
+pip install -e . -e cellxgene-census/api/python/cellxgene_census -e tiledb-soma/apis/python
 
 set +ex
