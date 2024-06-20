@@ -7,17 +7,15 @@ from typing import Optional, Callable, Tuple
 
 import click
 import pandas as pd
-
-from benchmarks.data_loader.paths import DEFAULT_DB_PATH
-from cellxgene_census.experimental.ml.pytorch import METHODS
 from click import option, argument
 from utz import err
 
 from benchmarks.benchmark import benchmark, Exp
-from benchmarks.cli.base import cli
+from benchmarks.cli.base import cli, slice_opts
+from benchmarks.data_loader.paths import DEFAULT_DB_PATH
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
+from cellxgene_census.experimental.ml.pytorch import METHODS
 from tiledbsoma import SOMATileDBContext, Experiment
-
 
 TBL = 'epochs'
 
@@ -134,14 +132,15 @@ class BlockSpec:
 @option('-C', '--no-cuda-conversion', is_flag=True)
 @option('-d', '--db-path', default=DEFAULT_DB_PATH, help=f'Insert a row in this SQLite database with the samples/sec and other -M/--metadata; defaults to {DEFAULT_DB_PATH}, disable with -D/--no-db')
 @option('-D', '--no-db', is_flag=True, help=f"Don't insert timings into the default SQLite database ({DEFAULT_DB_PATH}).")
-@option('-e', '--num-epochs', default=1, type=int)
+@option('-E', '--num-epochs', default=1, type=int)
 @option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
 @option('-g', '--gc-freq', default=10, type=int)
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
 @option('-r', '--region', help="S3 region")
-@option('-S', '--soma-buffer-size', default=1024**3, type=int)
-@argument('uri')  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
+@option('-z', '--soma-buffer-size', default=1024**3, type=int)
+@argument('uri', required=False)  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
+@slice_opts
 def data_loader(
         block_specs,
         batch_size,
@@ -156,6 +155,17 @@ def data_loader(
         region,
         soma_buffer_size,
         uri,
+        # slice_opts
+        collection_id,
+        census_uri,
+        census_version,
+        start,
+        end,
+        sorted_datasets,
+        # slice_opts generates these, when reading+slicing directly from Census
+        exp_fn=None,
+        obs_query=None,
+        var_query=None,
 ):
     """Benchmark loading batches into PyTorch, from a TileDB-SOMA experiment."""
     tiledb_config = {
@@ -176,14 +186,14 @@ def data_loader(
     except CalledProcessError:
         sha_str = f"{sha}-dirty"
 
-    alb_start = pd.Timestamp.now()
+    alb_start_dt = pd.Timestamp.now()
     for block_spec in block_specs:
         for method in methods:
             err(f"Running {method=}, {block_spec=}")
             chunk_size = block_spec.chunk_size
             chunks_per_block = block_spec.chunks_per_block
             metadata_dict = {
-                'alb_start': alb_start,
+                'alb_start_dt': alb_start_dt,
                 'sha': sha_str,
                 'user': getuser(),
                 'hostname': gethostname(),
@@ -195,51 +205,61 @@ def data_loader(
                 'block_size': block_spec.block_size,
                 'py_buffer_size': py_buffer_size,
                 'soma_buffer_size': soma_buffer_size,
+                'collection_id': collection_id,
+                'census_uri': census_uri,
+                'census_version': census_version,
+                'start_idx': start,
+                'end_idx': end,
+                'sorted_datasets': sorted_datasets,
             }
             metadata_dict.update(**{
                 k: v for k, v in
                 (m.split('=', 1) for m in metadata)
             })
-            with Experiment.open(uri, context=context) as experiment:
-                datapipe = ExperimentDataPipe(
-                    experiment,
-                    measurement_name="RNA",
-                    X_name="raw",
+            if exp_fn:
+                experiment = exp_fn()
+            else:
+                experiment = Experiment.open(uri, context=context)
+            datapipe = ExperimentDataPipe(
+                experiment,
+                measurement_name="RNA",
+                X_name="raw",
+                batch_size=batch_size,
+                shuffle=True,
+                soma_chunk_size=chunk_size,
+                shuffle_chunk_count=chunks_per_block,
+                obs_query=obs_query,
+                var_query=var_query,
+                method=method,
+            )
+            loader = experiment_dataloader(datapipe)
+            exp = Exp(datapipe, loader)
+
+            epochs = []
+            records = []
+            for epoch_idx in range(num_epochs):
+                start_dt = pd.Timestamp.now()
+                epoch = benchmark(
+                    exp,
                     batch_size=batch_size,
-                    shuffle=True,
-                    soma_chunk_size=chunk_size,
-                    shuffle_chunk_count=chunks_per_block,
-                    method=method,
+                    gc_freq=gc_freq,
+                    ensure_cuda=not no_cuda_conversion,
                 )
+                records.append(dict(
+                    start_dt=start_dt,
+                    epoch=epoch_idx,
+                    n_rows=epoch.n_rows,
+                    n_cols=epoch.n_cols,
+                    elapsed=epoch.elapsed,
+                    gc=epoch.gc,
+                    max_mem=datapipe.max_process_mem_usage_bytes,
+                    **metadata_dict,
+                ))
+                epochs.append(epoch_idx)
 
-                loader = experiment_dataloader(datapipe)
-                exp = Exp(datapipe, loader)
+            records_df = pd.DataFrame(records)
+            if not no_db:
+                db_uri = f"sqlite:///{db_path}"
+                records_df.to_sql(TBL, db_uri, if_exists='append', index=False)
 
-                epochs = []
-                records = []
-                for epoch_idx in range(num_epochs):
-                    start = pd.Timestamp.now()
-                    epoch = benchmark(
-                        exp,
-                        batch_size=batch_size,
-                        gc_freq=gc_freq,
-                        ensure_cuda=not no_cuda_conversion,
-                    )
-                    records.append(dict(
-                        start=start,
-                        epoch=epoch_idx,
-                        n_rows=epoch.n_rows,
-                        n_cols=epoch.n_cols,
-                        elapsed=epoch.elapsed,
-                        gc=epoch.gc,
-                        max_mem=datapipe.max_process_mem_usage_bytes,
-                        **metadata_dict,
-                    ))
-                    epochs.append(epoch_idx)
-
-                records_df = pd.DataFrame(records)
-                if not no_db:
-                    db_uri = f"sqlite:///{db_path}"
-                    records_df.to_sql(TBL, db_uri, if_exists='append', index=False)
-
-                err(records_df)
+            err(records_df)

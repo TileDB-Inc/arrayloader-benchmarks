@@ -25,9 +25,12 @@ def get_datasets_df(census, collection_id=COLLECTION_ID, profile=None) -> pd.Dat
         )
 
 
-def get_dataset_ids(*args, **kwargs):
+def get_dataset_ids(*args, sort_values=None, **kwargs):
+    df = get_datasets_df(*args, **kwargs)
+    if sort_values:
+        df = df.sort_values(sort_values)
     return (
-        get_datasets_df(*args, **kwargs)
+        df
         ["dataset_id"]
         .tolist()
     )
@@ -64,24 +67,30 @@ def subset_census(query: ExperimentAxisQuery, output_base_dir: str) -> None:
         rna.X["raw"].write(x_data)
 
 
-def download_datasets(
+def axis_query(
         exp: Experiment,
         datasets: list[str],
-        out_dir: str,
         start: Optional[int] = None,
         end: Optional[int] = None,
-        rm: bool = True,
         n_vars: Optional[int] = None,
-):
+) -> ExperimentAxisQuery:
     ds = datasets[slice(start, end)]
     err(f"Downloading {len(ds)} datasets:\n\t%s" % "\n\t".join(ds))
     datasets_query = f'dataset_id in {ds}'
-    query = exp.axis_query(
+    obs_query = AxisQuery(value_filter=datasets_query)
+    var_query = AxisQuery(coords=(slice(n_vars - 1),)) if n_vars else None
+    return exp.axis_query(
         "RNA",
-        obs_query=AxisQuery(value_filter=datasets_query),
-        var_query=AxisQuery(coords=(slice(n_vars - 1),)) if n_vars else None,
+        obs_query=obs_query,
+        var_query=var_query,
     )
 
+
+def download_datasets(
+        query: ExperimentAxisQuery,
+        out_dir: str,
+        rm: bool = True,
+):
     if exists(out_dir):
         if rm:
             err(f"Removing {out_dir}")

@@ -1,34 +1,39 @@
-from functools import partial
 from os import makedirs
 from os.path import join, basename, dirname
-from subprocess import check_call
-from sys import stderr
 
 from click import option, Choice
 from papermill import execute_notebook
 from utz import err, sh
 
 from benchmarks.cli.base import cli
+from benchmarks.cli.dataset_slice import DatasetSlice
 from benchmarks.data_loader.paths import NB_PATH, DEFAULT_DB_PATH, NB_DIR
 
 
 @cli.command()
 @option('-d', '--db-path', default=DEFAULT_DB_PATH, help='Path to "epochs" benchmark SQLite DB')
-@option('-D', '--dataset-key', type=Choice(['2:7', '2:9', '2:14']), help="Filter to DB entries matching this URI")
+@option('-D', '--dataset-slice', callback=lambda ctx, param, value: DatasetSlice.parse(value) if value else None, help="Filter to DB entries matching this URI")
 @option('-h', '--host-key', type=Choice(['m3', 'ec2']), default='ec2', help='Filter to DB entries that were run on M3 Macbook vs. EC2 g4dn.8xlarge (default)')
 @option('-o', '--out-dir', help='Directory (under -O/--out-root) to write the executed notebook – and associated plot data – to')
 @option('-O', '--out-root', default=NB_DIR, help=f'Output "root" directory, default: {NB_DIR}')
 @option('-s', '--since', help="Filter to DB entries run since this datetime (inclusive)")
-@option('--s3', is_flag=True, help="Filter to DB entries run against S3")
-def data_loader_nb(db_path, dataset_key, host_key, out_dir: str, out_root, since, s3):
+@option('--s3/--no-s3', is_flag=True, default=None, help="If set, filter to DB entries run against S3, or run locally")
+def data_loader_nb(db_path, dataset_slice: DatasetSlice, host_key, out_dir: str, out_root, since, s3):
     nb_path = NB_PATH
+    if not out_dir:
+        if dataset_slice:
+            out_dir = f'{dataset_slice}'
+        else:
+            raise ValueError('Must provide -o/--out-dir or -d/--dataset-slice')
     out_dir = join(out_root, out_dir)
     out_nb_path = join(out_dir, basename(nb_path))
 
-    if s3:
-        uri_rgx = f'^s3://.*{dataset_key}'
+    if s3 is True:
+        uri_rgx = f'^s3://.*{dataset_slice}'
+    elif s3 is False:
+        uri_rgx = f'^data/.*{dataset_slice}'
     else:
-        uri_rgx = f'^data/.*{dataset_key}'
+        uri_rgx = None
 
     host_kwargs = {
         'ec2': dict(hostname_rgx='us-west-2', host='EC2 (g4dn.8xlarge)'),
@@ -41,6 +46,8 @@ def data_loader_nb(db_path, dataset_key, host_key, out_dir: str, out_root, since
         out_dir=out_dir,
         show='png',
         since=since,
+        start_idx=dataset_slice.start,
+        end_idx=dataset_slice.end,
         uri_rgx=uri_rgx,
     )
     err(f"Running papermill: {nb_path} {out_nb_path}")
