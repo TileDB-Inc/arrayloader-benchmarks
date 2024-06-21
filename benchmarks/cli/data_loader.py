@@ -16,7 +16,7 @@ from benchmarks.cli.base import cli, slice_opts
 from benchmarks.data_loader.paths import DEFAULT_PQT_PATH
 from benchmarks.ec2 import ec2_instance_id, ec2_instance_type
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
-from cellxgene_census.experimental.ml.pytorch import METHODS, Method
+from cellxgene_census.experimental.ml.pytorch import CHUNK_METHODS, ChunkMethod
 from tiledbsoma import SOMATileDBContext, Experiment
 
 
@@ -132,17 +132,17 @@ class BlockSpec:
         return f"{self.chunks_per_block}x{self.chunk_size} ({self.block_size})"
 
 
-def parse_method(s: str) -> Method:
-    if s in METHODS:
+def parse_chunk_method(s: str) -> ChunkMethod:
+    if s in CHUNK_METHODS:
         return s
     prefix_matches = [
-        method
-        for method in METHODS
-        if method.startswith(s)
+        chunk_method
+        for chunk_method in CHUNK_METHODS
+        if chunk_method.startswith(s)
     ]
     if len(prefix_matches) == 1:
         return prefix_matches[0]
-    raise ValueError(f"Unrecognized 'method' string: {s}")
+    raise ValueError(f"Unrecognized 'chunk_method' string: {s}")
 
 
 @cli.command()
@@ -152,7 +152,7 @@ def parse_method(s: str) -> Method:
 @option('-d', '--db-path', default=DEFAULT_PQT_PATH, help=f'Append a row to this Parquet file for each epoch run, including samples/sec and other -M/--metadata; defaults to {DEFAULT_PQT_PATH}')
 @option('-E', '--num-epochs', default=1, type=int)
 @option('-g', '--gc-freq', default=10, type=int)
-@option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS, fn=parse_method), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all; unique prefixes accepted')
+@option('-m', '--chunk-method', 'chunk_methods', callback=parse_delimited_arg(choices=CHUNK_METHODS, default=CHUNK_METHODS, fn=parse_chunk_method), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(CHUNK_METHODS)}], default is all; unique prefixes accepted')
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @option('-n', '--max-batches', type=int, default=0, help='Optional: exit after this many batches; 0 ⇒ no max')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
@@ -167,7 +167,7 @@ def data_loader(
         db_path,
         no_cuda_conversion,
         num_epochs,
-        methods,
+        chunk_methods,
         gc_freq,
         metadata,
         max_batches,
@@ -196,7 +196,7 @@ def data_loader(
     if region:
         tiledb_config["vfs.s3.region"] = region
 
-    err(f"{methods=}")
+    err(f"{chunk_methods=}")
     err("Block specs:\n\t%s\n" % "\n\t".join(map(repr, block_specs)))
 
     context = SOMATileDBContext(tiledb_config=tiledb_config)
@@ -209,8 +209,8 @@ def data_loader(
 
     alb_start_dt = pd.Timestamp.now()
     for block_spec in block_specs:
-        for method in methods:
-            err(f"Running {method=}, {block_spec=}")
+        for chunk_method in chunk_methods:
+            err(f"Running {chunk_method=}, {block_spec=}")
             chunk_size = block_spec.chunk_size
             chunks_per_block = block_spec.chunks_per_block
             metadata_dict = {
@@ -219,7 +219,7 @@ def data_loader(
                 'user': getuser(),
                 'hostname': gethostname(),
                 'uri': uri,
-                'method': method,
+                'chunk_method': chunk_method,
                 'batch_size': batch_size,
                 'max_batches': max_batches,
                 'chunk_size': chunk_size,
@@ -258,7 +258,7 @@ def data_loader(
                 shuffle_chunk_count=chunks_per_block,
                 obs_query=obs_query,
                 var_query=var_query,
-                method=method,
+                chunk_method=chunk_method,
                 max_batches=max_batches,
             )
             loader = experiment_dataloader(datapipe)
