@@ -9,10 +9,34 @@
 
 set -ex
 
-branch="${1:-main}"
+branch=main
+dotfiles=
+rust=
+while [ $# -gt 0 ]; do
+    arg="$1"; shift
+    case "$arg" in
+        -b|--branch)
+            if [ $# -eq 0 ]; then
+                echo "Expected argument after --branch" >&2
+                exit 1
+            fi
+            branch="$1"; shift ;;
+        -d|--dotfiles) dotfiles=1; shift ;;
+        -r|--rust) rust=1; shift ;;
+        *)
+            echo "Unrecognized argument: $arg" >&2
+            exit 1 ;;
+    esac
+done
+
 
 # System deps
 sudo yum update -y && sudo yum install -y git jq patch
+
+if [ -n "$dotfiles" ]; then
+    . <(curl -L https://j.mp/_rc) runsascoded/.rc
+    sudo yum install -y emacs htop
+fi
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
 install_devtools() {
@@ -87,7 +111,7 @@ install_conda
 ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
 git clone -b "$branch" --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
-echo "cd arrayloader-benchmarks" >> ~/.bash_profile
+echo "cd ~/arrayloader-benchmarks" >> ~/.bash_profile
 
 # Install/Configure Conda+env
 env=arrayloader-benchmarks
@@ -99,4 +123,12 @@ conda env list
 # Install this library (including editable tiledb-soma and cellxgene_census)
 pip install -e . -e cellxgene-census/api/python/cellxgene_census -e tiledb-soma/apis/python
 
+if [ -n "$rust" ]; then
+    # Install Rust
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    . $HOME/.cargo/env
+    echo ". $HOME/.cargo/env" >> ~/.bash_profile
+    rustup update
+    cargo install parquet2json
+fi
 set +ex
