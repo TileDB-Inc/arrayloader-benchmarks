@@ -96,10 +96,16 @@ class BlockSpec:
             else:
                 block_chunks_start = int(m.group('block_chunks_start'))
                 block_chunks_stop = int(m.group('block_chunks_stop'))
-                return [
+                if block_chunks_start > block_chunks_stop:
+                    reverse = True
+                    block_chunks_start, block_chunks_stop = block_chunks_stop, block_chunks_start
+                else:
+                    reverse = False
+                block_specs = [
                     BlockSpec.make(chunks_per_block=block_chunks, block_size=block_size)
                     for block_chunks in pows(block_chunks_start, block_chunks_stop, pow=2)
                 ]
+                return block_specs if not reverse else block_specs[::-1]
         raise ValueError(f"Invalid block spec: {s}")
 
     @staticmethod
