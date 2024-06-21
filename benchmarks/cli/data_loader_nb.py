@@ -1,24 +1,24 @@
 from os import makedirs
 from os.path import join, basename, dirname
 
-from click import option, Choice
+from click import option, argument
 from papermill import execute_notebook
 from utz import err, sh
 
 from benchmarks.cli.base import cli
 from benchmarks.cli.dataset_slice import DatasetSlice
-from benchmarks.data_loader.paths import NB_PATH, DEFAULT_DB_PATH, NB_DIR
+from benchmarks.data_loader.paths import NB_PATH, NB_DIR, DEFAULT_PQT_PATH
 
 
 @cli.command()
-@option('-d', '--db-path', default=DEFAULT_DB_PATH, help='Path to "epochs" benchmark SQLite DB')
 @option('-D', '--dataset-slice', callback=lambda ctx, param, value: DatasetSlice.parse(value) if value else None, help="Filter to DB entries matching this URI")
-@option('-h', '--host-key', type=Choice(['m3', 'ec2']), default='ec2', help='Filter to DB entries that were run on M3 Macbook vs. EC2 g4dn.8xlarge (default)')
+@option('-h', '--hostname-rgx', help='Filter to DB entries matching this hostname regex')
 @option('-o', '--out-dir', help='Directory (under -O/--out-root) to write the executed notebook – and associated plot data – to')
 @option('-O', '--out-root', default=NB_DIR, help=f'Output "root" directory, default: {NB_DIR}')
 @option('-s', '--since', help="Filter to DB entries run since this datetime (inclusive)")
 @option('--s3/--no-s3', is_flag=True, default=None, help="If set, filter to DB entries run against S3, or run locally")
-def data_loader_nb(db_path, dataset_slice: DatasetSlice, host_key, out_dir: str, out_root, since, s3):
+@argument('db_path', default=DEFAULT_PQT_PATH)
+def data_loader_nb(db_path, dataset_slice: DatasetSlice, hostname_rgx, out_dir: str, out_root, since, s3):
     nb_path = NB_PATH
     if not out_dir:
         if dataset_slice:
@@ -35,14 +35,9 @@ def data_loader_nb(db_path, dataset_slice: DatasetSlice, host_key, out_dir: str,
     else:
         uri_rgx = None
 
-    host_kwargs = {
-        'ec2': dict(hostname_rgx='us-west-2', host='EC2 (g4dn.8xlarge)'),
-        'm3': dict(hostname_rgx='m3', host='M3 Macbook')
-    }[host_key]
-
     parameters = dict(
         db_path=db_path,
-        **host_kwargs,
+        hostname_rgx=hostname_rgx,
         out_dir=out_dir,
         show='png',
         since=since,

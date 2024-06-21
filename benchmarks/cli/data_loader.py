@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 from getpass import getuser
+from os.path import exists
 from socket import gethostname
 from subprocess import check_output, check_call, CalledProcessError
 from typing import Optional, Callable, Tuple
@@ -12,13 +13,11 @@ from utz import err
 
 from benchmarks.benchmark import benchmark, Exp
 from benchmarks.cli.base import cli, slice_opts
-from benchmarks.data_loader.paths import DEFAULT_DB_PATH
+from benchmarks.data_loader.paths import DEFAULT_PQT_PATH
 from benchmarks.ec2 import ec2_instance_id, ec2_instance_type
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
 from cellxgene_census.experimental.ml.pytorch import METHODS
 from tiledbsoma import SOMATileDBContext, Experiment
-
-TBL = 'epochs'
 
 
 def parse_delimited_arg(
@@ -131,8 +130,7 @@ class BlockSpec:
 @option('-b', '--block-specs', callback=lambda ctx, param, value: BlockSpec.parse(value), multiple=True, help='Block/Chunk sizes to test, e.g. "131072/[1,2048]", "2048x64"')
 @option('-B', '--batch-size', default=1024, type=int)
 @option('-C', '--no-cuda-conversion', is_flag=True)
-@option('-d', '--db-path', default=DEFAULT_DB_PATH, help=f'Insert a row in this SQLite database with the samples/sec and other -M/--metadata; defaults to {DEFAULT_DB_PATH}, disable with -D/--no-db')
-@option('-D', '--no-db', is_flag=True, help=f"Don't insert timings into the default SQLite database ({DEFAULT_DB_PATH}).")
+@option('-d', '--db-path', default=DEFAULT_PQT_PATH, help=f'Append a row to this Parquet file for each epoch run, including samples/sec and other -M/--metadata; defaults to {DEFAULT_PQT_PATH}')
 @option('-E', '--num-epochs', default=1, type=int)
 @option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
 @option('-g', '--gc-freq', default=10, type=int)
@@ -146,7 +144,6 @@ def data_loader(
         block_specs,
         batch_size,
         db_path,
-        no_db,
         no_cuda_conversion,
         num_epochs,
         methods,
@@ -265,8 +262,12 @@ def data_loader(
                 epochs.append(epoch_idx)
 
             records_df = pd.DataFrame(records)
-            if not no_db:
-                db_uri = f"sqlite:///{db_path}"
-                records_df.to_sql(TBL, db_uri, if_exists='append', index=False)
-
+            if exists(db_path):
+                existing = pd.read_parquet(db_path)
+                err(f"Appending {len(records_df)} records to {len(existing)} existing, at {db_path}")
+                new_df = pd.concat([existing, records_df], ignore_index=True).reset_index(drop=True)
+                new_df.to_parquet(db_path, index=False)
+            else:
+                err(f"Writing {len(records_df)} records to {db_path}")
+                records_df.to_parquet(db_path, index=False)
             err(records_df)
