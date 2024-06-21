@@ -47,10 +47,11 @@ class Results:
 def benchmark(
         exp: Exp,
         batch_size: int = 1024,
-        gc_freq: Optional[int] = None,
+        gc_freq: int | None = None,
         exclude_first_batch: bool = True,
         progress_bar: bool = True,
         ensure_cuda: bool = True,
+        max_batches: int | None = None,
 ) -> Epoch:
     n_samples, n_vars = exp.datapipe.shape
     loader_iter = exp.loader.__iter__()
@@ -58,13 +59,15 @@ def benchmark(
         # Optionally exclude first batch from benchmark, as it may include setup time
         next(loader_iter)
 
-    num_iter = n_samples // batch_size if n_samples is not None else None
+    num_iter = (n_samples + batch_size - 1) // batch_size if n_samples is not None else None
 
     batches = []
-    total = num_iter if num_iter is not None else len(loader_iter)
+    n_batches = num_iter if num_iter is not None else len(loader_iter)
+    if max_batches and n_batches > max_batches:
+        n_batches = max_batches
     batch_iter = enumerate(loader_iter)
     if progress_bar:
-        batch_iter = tqdm(batch_iter, total=total)
+        batch_iter = tqdm(batch_iter, total=n_batches)
 
     start_time = batch_time = time()
 
@@ -93,9 +96,9 @@ def benchmark(
     execution_time = time() - start_time
     gc.collect()
 
-    time_per_sample = (1e6 * execution_time) / (total * batch_size)
-    print(f'time per sample: {time_per_sample:.2f} μs')
     total_rows = sum(batch.n_rows for batch in batches)
+    time_per_sample = 1e6 * execution_time / total_rows
+    print(f'time per sample: {time_per_sample:.2f} μs')
     total_gc = sum(batch.gc or 0 for batch in batches)
     samples_per_sec = total_rows / execution_time
     print(f'samples per sec: {samples_per_sec:.2f} samples/sec')
