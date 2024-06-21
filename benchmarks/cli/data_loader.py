@@ -143,6 +143,7 @@ class BlockSpec:
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @option('-n', '--max-batches', type=int, default=0, help='Optional: exit after this many batches; 0 ⇒ no max')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
+@option('-q', '--quiet', count=True, help='1x: disable progress bar')
 @option('-r', '--region', help="S3 region")
 @option('-z', '--soma-buffer-size', default=1024**3, type=int)
 @argument('uri', required=False)  # e.g. `data/census-benchmark_2:3`; `alb download -s2 -e3
@@ -158,6 +159,7 @@ def data_loader(
         metadata,
         max_batches,
         py_buffer_size,
+        quiet,
         region,
         soma_buffer_size,
         uri,
@@ -259,6 +261,7 @@ def data_loader(
                     gc_freq=gc_freq,
                     ensure_cuda=not no_cuda_conversion,
                     max_batches=max_batches,
+                    progress_bar=quiet < 1,
                 )
                 records.append(dict(
                     start_dt=start_dt,
