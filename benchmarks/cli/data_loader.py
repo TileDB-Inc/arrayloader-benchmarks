@@ -16,7 +16,7 @@ from benchmarks.cli.base import cli, slice_opts
 from benchmarks.data_loader.paths import DEFAULT_PQT_PATH
 from benchmarks.ec2 import ec2_instance_id, ec2_instance_type
 from cellxgene_census.experimental.ml import ExperimentDataPipe, experiment_dataloader
-from cellxgene_census.experimental.ml.pytorch import METHODS
+from cellxgene_census.experimental.ml.pytorch import METHODS, Method
 from tiledbsoma import SOMATileDBContext, Experiment
 
 
@@ -132,6 +132,19 @@ class BlockSpec:
         return f"{self.chunks_per_block}x{self.chunk_size} ({self.block_size})"
 
 
+def parse_method(s: str) -> Method:
+    if s in METHODS:
+        return s
+    prefix_matches = [
+        method
+        for method in METHODS
+        if method.startswith(s)
+    ]
+    if len(prefix_matches) == 1:
+        return prefix_matches[0]
+    raise ValueError(f"Unrecognized 'method' string: {s}")
+
+
 @cli.command()
 @option('-b', '--block-specs', callback=lambda ctx, param, value: BlockSpec.parse(value), multiple=True, help='Block/Chunk sizes to test, e.g. "131072/[1,2048]", "2048x64"')
 @option('-B', '--batch-size', default=1024, type=int)
@@ -139,7 +152,7 @@ class BlockSpec:
 @option('-d', '--db-path', default=DEFAULT_PQT_PATH, help=f'Append a row to this Parquet file for each epoch run, including samples/sec and other -M/--metadata; defaults to {DEFAULT_PQT_PATH}')
 @option('-E', '--num-epochs', default=1, type=int)
 @option('-g', '--gc-freq', default=10, type=int)
-@option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
+@option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS, fn=parse_method), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all; unique prefixes accepted')
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
 @option('-n', '--max-batches', type=int, default=0, help='Optional: exit after this many batches; 0 ⇒ no max')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
