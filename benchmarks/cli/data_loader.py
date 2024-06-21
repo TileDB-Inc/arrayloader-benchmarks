@@ -151,6 +151,7 @@ def parse_chunk_method(s: str) -> ChunkMethod:
 @option('-C', '--no-cuda-conversion', is_flag=True)
 @option('-d', '--db-path', default=DEFAULT_PQT_PATH, help=f'Append a row to this Parquet file for each epoch run, including samples/sec and other -M/--metadata; defaults to {DEFAULT_PQT_PATH}')
 @option('-E', '--num-epochs', default=1, type=int)
+@option('-F', '--no-exclude-first-batch', 'no_exclude_first_batch', is_flag=True)
 @option('-g', '--gc-freq', default=10, type=int)
 @option('-m', '--chunk-method', 'chunk_methods', callback=parse_delimited_arg(choices=CHUNK_METHODS, default=CHUNK_METHODS, fn=parse_chunk_method), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(CHUNK_METHODS)}], default is all; unique prefixes accepted')
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
@@ -167,6 +168,7 @@ def data_loader(
         db_path,
         no_cuda_conversion,
         num_epochs,
+        no_exclude_first_batch,
         chunk_methods,
         gc_freq,
         metadata,
@@ -207,6 +209,8 @@ def data_loader(
     except CalledProcessError:
         sha_str = f"{sha}-dirty"
 
+    exclude_first_batch = not no_exclude_first_batch
+    ensure_cuda = not no_cuda_conversion
     alb_start_dt = pd.Timestamp.now()
     for block_spec in block_specs:
         for chunk_method in chunk_methods:
@@ -259,7 +263,7 @@ def data_loader(
                 obs_query=obs_query,
                 var_query=var_query,
                 chunk_method=chunk_method,
-                max_batches=max_batches,
+                max_batches=max_batches + (1 if exclude_first_batch else 0),
             )
             loader = experiment_dataloader(datapipe)
             exp = Exp(datapipe, loader)
@@ -272,12 +276,15 @@ def data_loader(
                     exp,
                     batch_size=batch_size,
                     gc_freq=gc_freq,
-                    ensure_cuda=not no_cuda_conversion,
+                    ensure_cuda=ensure_cuda,
+                    exclude_first_batch=exclude_first_batch,
                     max_batches=max_batches,
                     progress_bar=quiet < 1,
                 )
+                end_dt = pd.Timestamp.now()
                 records.append(dict(
                     start_dt=start_dt,
+                    end_dt=end_dt,
                     epoch=epoch_idx,
                     n_rows=epoch.n_rows,
                     n_cols=epoch.n_cols,
