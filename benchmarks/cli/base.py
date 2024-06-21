@@ -3,7 +3,6 @@ from inspect import getfullargspec
 
 from click import group, option
 from somacore import AxisQuery
-from utz import err
 
 import cellxgene_census
 from benchmarks import COLLECTION_ID

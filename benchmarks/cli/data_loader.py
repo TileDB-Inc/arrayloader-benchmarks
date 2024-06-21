@@ -132,9 +132,10 @@ class BlockSpec:
 @option('-C', '--no-cuda-conversion', is_flag=True)
 @option('-d', '--db-path', default=DEFAULT_PQT_PATH, help=f'Append a row to this Parquet file for each epoch run, including samples/sec and other -M/--metadata; defaults to {DEFAULT_PQT_PATH}')
 @option('-E', '--num-epochs', default=1, type=int)
-@option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
 @option('-g', '--gc-freq', default=10, type=int)
+@option('-m', '--method', 'methods', callback=parse_delimited_arg(choices=METHODS, default=METHODS), help=f'Comma-delimited list of matrix conversion methods to test; options: [{", ".join(METHODS)}], default is all')
 @option('-M', '--metadata', multiple=True, help='<key>=<value> pairs to attach to the record persisted to the -d/--database')
+@option('-n', '--max-batches', type=int, default=0, help='Optional: exit after this many batches; 0 ⇒ no max')
 @option('-P', '--py-buffer-size', default=1024**3, type=int)
 @option('-r', '--region', help="S3 region")
 @option('-z', '--soma-buffer-size', default=1024**3, type=int)
@@ -149,6 +150,7 @@ def data_loader(
         methods,
         gc_freq,
         metadata,
+        max_batches,
         py_buffer_size,
         region,
         soma_buffer_size,
@@ -198,6 +200,7 @@ def data_loader(
                 'uri': uri,
                 'method': method,
                 'batch_size': batch_size,
+                'max_batches': max_batches,
                 'chunk_size': chunk_size,
                 'chunks_per_block': chunks_per_block,
                 'block_size': block_spec.block_size,
@@ -235,6 +238,7 @@ def data_loader(
                 obs_query=obs_query,
                 var_query=var_query,
                 method=method,
+                max_batches=max_batches,
             )
             loader = experiment_dataloader(datapipe)
             exp = Exp(datapipe, loader)
@@ -248,6 +252,7 @@ def data_loader(
                     batch_size=batch_size,
                     gc_freq=gc_freq,
                     ensure_cuda=not no_cuda_conversion,
+                    max_batches=max_batches,
                 )
                 records.append(dict(
                     start_dt=start_dt,
