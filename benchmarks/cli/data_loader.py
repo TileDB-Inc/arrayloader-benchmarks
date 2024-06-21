@@ -38,6 +38,8 @@ def parse_delimited_arg(
                 v = fn(v0)
                 if flatten and isinstance(v, list):
                     values.extend(v)
+                else:
+                    values.append(v)
         if choices is not None:
             for v in values:
                 if v not in choices:
