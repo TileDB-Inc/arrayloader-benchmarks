@@ -6,7 +6,7 @@ from somacore import AxisQuery
 
 import cellxgene_census
 from benchmarks import COLLECTION_ID
-from benchmarks.census import get_dataset_ids, axis_query
+from benchmarks.census import axis_query, get_datasets_df
 
 collection_id_opt = option('-c', '--collection-id', default=COLLECTION_ID, help=f"Census collection ID to slice datasets from; default: {COLLECTION_ID}")
 census_uri_opt = option('-u', '--census-uri', help="Optional Census URI override, default is determined by -V/--census-version")
@@ -39,9 +39,11 @@ def slice_opts(fn):
         fn_kwargs = dict(**kwargs, query=None, obs_query=None, var_query=None)
         if start is not None or end is not None:
             census = cellxgene_census.open_soma(uri=census_uri, census_version=census_version)
-            dataset_ids = get_dataset_ids(census, collection_id, sort_values='dataset_total_cell_count' if sorted_datasets else None)
+            datasets_df = get_datasets_df(census, collection_id, sort_values='dataset_total_cell_count' if sorted_datasets else None)
+            dataset_ids = datasets_df.dataset_id.tolist()
             print(f'Found {len(dataset_ids)} total datasets: {dataset_ids[:10]}… slicing [{start},{end})')
             ds = dataset_ids[slice(start, end)]
+            fn_kwargs['total_cells'] = datasets_df.loc[datasets_df.dataset_id.isin(ds), 'dataset_total_cell_count'].sum()
             datasets_query = f'dataset_id in {ds}'
             if 'query' in spec.args:
                 experiment = census["census_data"]["homo_sapiens"]

@@ -15,23 +15,24 @@ from tiledbsoma import Experiment, Measurement
 from tiledbsoma.stats import stats
 
 
-def get_datasets_df(census, collection_id=COLLECTION_ID, profile=None) -> pd.DataFrame:
+def get_datasets_df(census, collection_id=COLLECTION_ID, profile=None, sort_values=None) -> pd.DataFrame:
     with stats.collect(profile) if profile else nullcontext():
-        return (
+        df = (
             census["census_info"]["datasets"]
             .read(value_filter=f"collection_id == '{collection_id}'")
             .concat()
             .to_pandas()
         )
-
-
-def get_dataset_ids(*args, sort_values=None, **kwargs):
-    df = get_datasets_df(*args, **kwargs)
     if sort_values:
         df = df.sort_values(sort_values)
+    return df
+
+
+def get_dataset_ids(*args, **kwargs):
+    df = get_datasets_df(*args, **kwargs)
     return (
         df
-        ["dataset_id"]
+        .dataset_id
         .tolist()
     )
 

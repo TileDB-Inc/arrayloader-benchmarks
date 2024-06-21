@@ -189,6 +189,7 @@ def data_loader(
         exp_fn=None,
         obs_query=None,
         var_query=None,
+        total_cells=None,
 ):
     """Benchmark loading batches into PyTorch, from a TileDB-SOMA experiment."""
     tiledb_config = {
@@ -237,6 +238,7 @@ def data_loader(
                 'start_idx': start,
                 'end_idx': end,
                 'sorted_datasets': sorted_datasets,
+                'total_rows': total_cells,
             }
             metadata_dict.update(**{
                 k: v for k, v in
