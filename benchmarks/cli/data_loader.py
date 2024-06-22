@@ -7,6 +7,7 @@ from subprocess import check_output, check_call, CalledProcessError
 from typing import Optional, Callable, Tuple
 
 import click
+import numpy as np
 import pandas as pd
 from click import option, argument
 from utz import err
@@ -275,28 +276,38 @@ def data_loader(
             epochs = []
             records = []
             for epoch_idx in range(num_epochs):
-                start_dt = pd.Timestamp.now()
-                epoch = benchmark(
-                    exp,
-                    batch_size=batch_size,
-                    gc_freq=gc_freq,
-                    ensure_cuda=ensure_cuda,
-                    exclude_first_batch=exclude_first_batch,
-                    max_batches=max_batches,
-                    progress_bar=quiet < 1,
+                record = dict(
+                    epoch=epoch_idx,
+                    **metadata_dict,
                 )
+                start_dt = pd.Timestamp.now()
+                epoch = None
+                try:
+                    epoch = benchmark(
+                        exp,
+                        batch_size=batch_size,
+                        gc_freq=gc_freq,
+                        ensure_cuda=ensure_cuda,
+                        exclude_first_batch=exclude_first_batch,
+                        max_batches=max_batches,
+                        progress_bar=quiet < 1,
+                    )
+                except np.core._exceptions._ArrayMemoryError:
+                    record.update(oom=True)
                 end_dt = pd.Timestamp.now()
-                records.append(dict(
+                record.update(
                     start_dt=start_dt,
                     end_dt=end_dt,
-                    epoch=epoch_idx,
-                    n_rows=epoch.n_rows,
-                    n_cols=epoch.n_cols,
-                    elapsed=epoch.elapsed,
-                    gc=epoch.gc,
                     max_mem=datapipe.max_process_mem_usage_bytes,
-                    **metadata_dict,
-                ))
+                )
+                if epoch:
+                    record.update(
+                        n_rows=epoch.n_rows,
+                        n_cols=epoch.n_cols,
+                        elapsed=epoch.elapsed,
+                        gc=epoch.gc,
+                    )
+                records.append(record)
                 epochs.append(epoch_idx)
 
             records_df = pd.DataFrame(records)
