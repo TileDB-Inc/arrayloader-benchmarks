@@ -9,8 +9,9 @@
 
 set -ex
 
-branch=main
+_branch=main
 dotfiles=
+host=
 rust=
 while [ $# -gt 0 ]; do
     arg="$1"; shift
@@ -20,8 +21,14 @@ while [ $# -gt 0 ]; do
                 echo "Expected argument after --branch" >&2
                 exit 1
             fi
-            branch="$1"; shift ;;
+            _branch="$1"; shift ;;
         -d|--dotfiles) dotfiles=1; shift ;;
+        -h|--host)
+            if [ $# -eq 0 ]; then
+                echo "Expected argument after --host" >&2
+                exit 1
+            fi
+            host="$1"; shift ;;
         -r|--rust) rust=1; shift ;;
         *)
             echo "Unrecognized argument: $arg" >&2
@@ -36,6 +43,10 @@ sudo yum update -y && sudo yum install -y git jq patch
 if [ -n "$dotfiles" ]; then
     . <(curl -L https://j.mp/_rc) runsascoded/.rc
     sudo yum install -y emacs htop
+fi
+
+if [ -n "$host" ]; then
+    echo "export host=$host" >> ~/.bash_profile
 fi
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
@@ -65,7 +76,9 @@ install_cmake() {
     cmake_version="${1:-3.29.2}"
     cmake_stem=cmake-$cmake_version-linux-x86_64
     wget https://github.com/Kitware/CMake/releases/download/v$cmake_version/$cmake_stem.sh
-    bash $cmake_stem.sh
+    local dir="$HOME/$cmake_stem"
+    mkdir -p "$dir"
+    bash $cmake_stem.sh --skip-license --prefix="$dir" && rm $cmake_stem.sh
     export PATH="$HOME/$cmake_stem/bin:$PATH"
     echo >> ~/.bash_profile
     echo "# Use CMake $cmake_version; see https://github.com/ryan-williams/linux-helpers/blob/main/.pkg-rc" >> ~/.bash_profile
@@ -109,7 +122,7 @@ install_conda
 
 # Clone this repo
 ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
-git clone -b "$branch" --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
+git clone -b "$_branch" --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 echo "cd ~/arrayloader-benchmarks" >> ~/.bash_profile
 
