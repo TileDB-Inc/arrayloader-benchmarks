@@ -24,6 +24,8 @@ def data_loader_nb(db_path, dataset_slice: DatasetSlice, hostname_rgx, max_batch
     if not out_dir:
         if dataset_slice:
             out_dir = f'{dataset_slice}'
+            if max_batches:
+                out_dir += f'_{max_batches}'
         else:
             raise ValueError('Must provide -o/--out-dir or -d/--dataset-slice')
     out_dir = join(out_root, out_dir)
@@ -43,6 +45,7 @@ def data_loader_nb(db_path, dataset_slice: DatasetSlice, hostname_rgx, max_batch
         show='png',
         max_batches=max_batches,
         since=since,
+        sorted_datasets=dataset_slice.sorted_datasets,
         start_idx=dataset_slice.start,
         end_idx=dataset_slice.end,
         uri_rgx=uri_rgx,
