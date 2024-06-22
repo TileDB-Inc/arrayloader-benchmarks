@@ -9,13 +9,14 @@
 
 set -ex
 
-_branch=main
-conda=1
+branch=main
 cmake=1
+conda=1
+docker=
 devtools=1
-dotfiles=
 host=
-rust=
+parquet2json=
+dotfiles=
 while [ $# -gt 0 ]; do
     arg="$1"; shift
     case "$arg" in
@@ -25,9 +26,9 @@ while [ $# -gt 0 ]; do
                 echo "Expected argument after --branch" >&2
                 exit 1
             fi
-            _branch="$1"; shift ;;
+            branch="$1"; shift ;;
         -C|--no-cmake) cmake= ;;
-        -d|--dotfiles) dotfiles=1 ;;
+        -d|--docker) docker=1 ;;
         -D|--no-devtools) devtools= ;;
         -h|--host)
             if [ $# -eq 0 ]; then
@@ -35,7 +36,8 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             host="$1"; shift ;;
-        -r|--rust) rust=1 ;;
+        --p2j|--parquet2json) parquet2json=1 ;;
+        --rc|--dotfiles) dotfiles=1 ;;
         *)
             echo "Unrecognized argument: $arg" >&2
             exit 1 ;;
@@ -45,11 +47,6 @@ done
 
 # System deps
 sudo yum update -y && sudo yum install -y git jq patch
-
-if [ -n "$dotfiles" ]; then
-    . <(curl -L https://j.mp/_rc) runsascoded/.rc
-    sudo yum install -y emacs htop
-fi
 
 if [ -n "$host" ]; then
     echo "export host=$host" >> ~/.bash_profile
@@ -134,7 +131,7 @@ fi
 
 # Clone this repo
 ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
-git clone -b "$_branch" --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
+git clone -b "$branch" --recurse-submodules git@github.com:ryan-williams/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 echo "cd ~/arrayloader-benchmarks" >> ~/.bash_profile
 
@@ -148,7 +145,20 @@ conda env list
 # Install this library (including editable tiledb-soma and cellxgene_census)
 pip install -e . -e cellxgene-census/api/python/cellxgene_census -e tiledb-soma/apis/python
 
-if [ -n "$rust" ]; then
+if [ -n "$docker" ]; then
+    sudo yum install -y docker
+    sudo service docker start
+    sudo systemctl enable docker
+    sudo usermod -a -G docker $USER
+    echo "Added user $USER to docker group, but you'll need to log out and back in for it to take effect" >&2
+fi
+
+if [ -n "$dotfiles" ]; then
+    . <(curl -L https://j.mp/_rc) runsascoded/.rc
+    sudo yum install -y emacs htop
+fi
+
+if [ -n "$parquet2json" ]; then
     # Install Rust
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     . $HOME/.cargo/env
