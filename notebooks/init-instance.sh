@@ -10,26 +10,32 @@
 set -ex
 
 _branch=main
+conda=1
+cmake=1
+devtools=1
 dotfiles=
 host=
 rust=
 while [ $# -gt 0 ]; do
     arg="$1"; shift
     case "$arg" in
+        -A|--no-conda) conda= ;;
         -b|--branch)
             if [ $# -eq 0 ]; then
                 echo "Expected argument after --branch" >&2
                 exit 1
             fi
             _branch="$1"; shift ;;
-        -d|--dotfiles) dotfiles=1; shift ;;
+        -C|--no-cmake) cmake= ;;
+        -d|--dotfiles) dotfiles=1 ;;
+        -D|--no-devtools) devtools= ;;
         -h|--host)
             if [ $# -eq 0 ]; then
                 echo "Expected argument after --host" >&2
                 exit 1
             fi
             host="$1"; shift ;;
-        -r|--rust) rust=1; shift ;;
+        -r|--rust) rust=1 ;;
         *)
             echo "Unrecognized argument: $arg" >&2
             exit 1 ;;
@@ -69,7 +75,9 @@ install_devtools() {
     echo ". \"$enable\"" >> ~/.bash_profile
     which -a gcc
 }
-install_devtools 11
+if [ -n "$devtools" ]; then
+    install_devtools 11
+fi
 
 # Install more recent CMake (TileDB-SOMA build requires ≥3.21, instance comes with 2.8.x)
 install_cmake() {
@@ -85,7 +93,9 @@ install_cmake() {
     echo "export PATH=\"\$HOME/$cmake_stem/bin:\$PATH\"" >> ~/.bash_profile
     cmake --version
 }
-install_cmake 3.29.2
+if [ -n "$cmake" ]; then
+    install_cmake 3.29.2
+fi
 
 # Install Conda, configure libmamba solver
 install_conda() {
@@ -118,7 +128,9 @@ install_conda() {
     conda config --set solver libmamba
     conda activate base
 }
-install_conda
+if [ -n "$conda" ]; then
+    install_conda
+fi
 
 # Clone this repo
 ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
