@@ -1,5 +1,6 @@
 from os import makedirs
 from os.path import join, basename, dirname
+from subprocess import CalledProcessError
 
 from click import option, argument
 from papermill import execute_notebook
@@ -10,18 +11,22 @@ from benchmarks.cli.dataset_slice import DatasetSlice
 from benchmarks.data_loader.paths import NB_PATH, NB_DIR, DEFAULT_PQT_PATH
 
 
+DEFAULT_MARKER_SIZE_ANCHOR = '65536=10'
+
+
 @cli.command()
-@option('-a', '--marker-size-anchor', help='String, of the form "<block_size>=<marker_size>" (default "65536=10"); determines marker-size scaling vs. block_size')
+@option('-a', '--marker-size-anchor', help=f'String, of the form "<block_size>=<marker_size>" (default "{DEFAULT_MARKER_SIZE_ANCHOR}"); determines marker-size scaling vs. block_size')
 @option('-D', '--dataset-slice', callback=lambda ctx, param, value: DatasetSlice.parse(value) if value else None, help="Filter to DB entries matching this URI")
 @option('-h', '--hostname-rgx', help='Filter to DB entries matching this hostname regex')
 @option('-i', '--instance-type', help='Optional: filter to DB entries run on this EC2 `instance_type`')
 @option('-n', '--max-batches', type=int, default=0, help='Optional: filter to DB entries with this `max_batch` set')
 @option('-o', '--out-dir', help='Directory (under -O/--out-root) to write the executed notebook – and associated plot data – to')
-@option('-O', '--out-root', default=NB_DIR, help=f'Output "root" directory, default: {NB_DIR}')
+@option('-O', '--no-open', is_flag=True, help="Don't attempt to `open` the generated HTML plot")
+@option('-r', '--out-root', default=NB_DIR, help=f'Output "root" directory, default: {NB_DIR}')
 @option('-s', '--since', help="Filter to DB entries run since this datetime (inclusive)")
 @option('--s3/--no-s3', is_flag=True, default=None, help="If set, filter to DB entries run against S3, or run locally")
 @argument('db_path', default=DEFAULT_PQT_PATH)
-def data_loader_nb(db_path, marker_size_anchor, dataset_slice: DatasetSlice, hostname_rgx, instance_type, max_batches, out_dir: str, out_root, since, s3):
+def data_loader_nb(db_path, marker_size_anchor, dataset_slice: DatasetSlice, hostname_rgx, instance_type, max_batches, out_dir: str, no_open, out_root, since, s3):
     nb_path = NB_PATH
     if not out_dir:
         if dataset_slice:
@@ -63,3 +68,8 @@ def data_loader_nb(db_path, marker_size_anchor, dataset_slice: DatasetSlice, hos
         parameters=parameters,
     )
     sh('juq', 'papermill-clean', '-i', out_nb_path)
+    if not no_open:
+        try:
+            sh('open', join(out_dir, 'speed_vs_mem_1.html'))
+        except CalledProcessError:
+            pass
