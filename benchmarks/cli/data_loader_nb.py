@@ -11,6 +11,7 @@ from benchmarks.data_loader.paths import NB_PATH, NB_DIR, DEFAULT_PQT_PATH
 
 
 @cli.command()
+@option('-a', '--marker-size-anchor', help='String, of the form "<block_size>=<marker_size>" (default "65536=10"); determines marker-size scaling vs. block_size')
 @option('-D', '--dataset-slice', callback=lambda ctx, param, value: DatasetSlice.parse(value) if value else None, help="Filter to DB entries matching this URI")
 @option('-h', '--hostname-rgx', help='Filter to DB entries matching this hostname regex')
 @option('-i', '--instance-type', help='Optional: filter to DB entries run on this EC2 `instance_type`')
@@ -20,7 +21,7 @@ from benchmarks.data_loader.paths import NB_PATH, NB_DIR, DEFAULT_PQT_PATH
 @option('-s', '--since', help="Filter to DB entries run since this datetime (inclusive)")
 @option('--s3/--no-s3', is_flag=True, default=None, help="If set, filter to DB entries run against S3, or run locally")
 @argument('db_path', default=DEFAULT_PQT_PATH)
-def data_loader_nb(db_path, dataset_slice: DatasetSlice, hostname_rgx, instance_type, max_batches, out_dir: str, out_root, since, s3):
+def data_loader_nb(db_path, marker_size_anchor, dataset_slice: DatasetSlice, hostname_rgx, instance_type, max_batches, out_dir: str, out_root, since, s3):
     nb_path = NB_PATH
     if not out_dir:
         if dataset_slice:
@@ -41,6 +42,7 @@ def data_loader_nb(db_path, dataset_slice: DatasetSlice, hostname_rgx, instance_
 
     parameters = dict(
         db_path=db_path,
+        marker_size_anchor=marker_size_anchor,
         hostname_rgx=hostname_rgx,
         instance_type=instance_type,
         out_dir=out_dir,
