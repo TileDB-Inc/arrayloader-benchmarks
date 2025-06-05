@@ -53,25 +53,40 @@ if [ -n "$host" ]; then
 fi
 
 # Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
+# install_devtools() {
+#     # Adapted from https://stackoverflow.com/a/66376026/23555888
+#     local v="${1:-11}"
+#     sudo yum-config-manager --add-repo http://mirror.centos.org/centos/7/sclo/x86_64/rh/
+#     sudo yum install -y wget
+
+#     fortran=libgfortran5-8.3.1-2.1.1.el7.x86_64.rpm
+#     wget http://mirror.centos.org/centos/7/os/x86_64/Packages/$fortran
+#     sudo yum install $fortran -y
+#     rm $fortran
+
+#     sudo yum install -y devtoolset-$v --nogpgcheck
+#     local enable=/opt/rh/devtoolset-$v/enable
+#     . "$enable"
+#     echo >> ~/.bash_profile
+#     echo "# Use GCC $v" >> ~/.bash_profile
+#     echo ". \"$enable\"" >> ~/.bash_profile
+#     which -a gcc
+# }
 install_devtools() {
-    # Adapted from https://stackoverflow.com/a/66376026/23555888
-    local v="${1:-11}"
-    sudo yum-config-manager --add-repo http://mirror.centos.org/centos/7/sclo/x86_64/rh/
-    sudo yum install -y wget
-
-    fortran=libgfortran5-8.3.1-2.1.1.el7.x86_64.rpm
-    wget http://mirror.centos.org/centos/7/os/x86_64/Packages/$fortran
-    sudo yum install $fortran -y
-    rm $fortran
-
-    sudo yum install -y devtoolset-$v --nogpgcheck
-    local enable=/opt/rh/devtoolset-$v/enable
-    . "$enable"
-    echo >> ~/.bash_profile
-    echo "# Use GCC $v" >> ~/.bash_profile
-    echo ". \"$enable\"" >> ~/.bash_profile
-    which -a gcc
+  sudo tee /etc/yum.repos.d/centos-sclo.repo >/dev/null <<'EOF'
+[centos-sclo-rh]
+name=CentOS‑7 - SCLo rh (vault)
+baseurl=https://vault.centos.org/7.9.2009/sclo/x86_64/rh/
+enabled=1
+gpgcheck=0
+EOF
+  sudo yum clean all
+  sudo yum makecache fast
+  sudo yum install -y devtoolset-"${1:-11}"
+  source /opt/rh/devtoolset-"${1:-11}"/enable
+  echo ". /opt/rh/devtoolset-${1:-11}/enable" >> ~/.bash_profile
 }
+
 if [ -n "$devtools" ]; then
     install_devtools 11
 fi
