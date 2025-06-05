@@ -23,7 +23,6 @@ dependencies:
   - pip
   - polars
   - pyarrow==15.0.2
-  - pytorch==2.0.1[build=py3.11_cuda11*]
   - rich
   - s3fs==2024.3.1
   - scanpy
