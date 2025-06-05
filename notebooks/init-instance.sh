@@ -9,7 +9,7 @@
 
 set -ex
 
-branch=main
+branch=2025_profiling
 cmake=1
 conda=1
 docker=
