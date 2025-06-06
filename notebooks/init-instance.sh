@@ -73,22 +73,27 @@ fi
 #     which -a gcc
 # }
 install_devtools() {
-  sudo tee /etc/yum.repos.d/centos-sclo.repo >/dev/null <<'EOF'
-[centos-sclo-rh]
-name=CentOS‑7 - SCLo rh (vault)
-baseurl=https://vault.centos.org/7.9.2009/sclo/x86_64/rh/
-enabled=1
-gpgcheck=0
-EOF
-  sudo yum clean all
-  echo "Test 1"
-  sudo yum makecache
-  echo "Test 2"
-  sudo yum install -y devtoolset-"${1:-11}"
-  echo "Test 3"
-  source /opt/rh/devtoolset-"${1:-11}"/enable
-  echo ". /opt/rh/devtoolset-${1:-11}/enable" >> ~/.bash_profile
+    local want=${1:-11}
+    . /etc/os-release
+    if [[ $NAME == "Amazon Linux" && $VERSION_ID == 2023* ]]; then
+        echo ">> Detected Amazon Linux 2023"
+        sudo dnf -y groupinstall "Development Tools"
+        # Install newer side‑by‑side compilers if requested
+        if [[ $want != 11 ]]; then
+            sudo dnf -y install gcc${want} gcc${want}-c++ gcc${want}-gfortran
+            export CC=gcc${want}  CXX=g++${want}  FC=gfortran${want}
+        fi
+
+        echo "$PRETTY_NAME"
+    fi
+
+    echo
+    echo ">> Final compiler set:"
+    echo "GCC VERSION BELOW"
+    gcc --version
+    which -a gcc || true
 }
+
 
 if [ -n "$devtools" ]; then
     install_devtools 11
