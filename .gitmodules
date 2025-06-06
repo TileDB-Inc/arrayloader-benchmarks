@@ -1,6 +1,6 @@
 [submodule "tiledb-soma"]
 	path = tiledb-soma
-	url = https://github.com/ryan-williams/tiledb-soma
+	url = https://github.com/single-cell-data/TileDB-SOMA
 [submodule "cellxgene-census"]
 	path = cellxgene-census
-	url = https://github.com/ryan-williams/cellxgene-census
+	url = https://github.com/chanzuckerberg/cellxgene-census
