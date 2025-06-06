@@ -81,7 +81,7 @@ enabled=1
 gpgcheck=0
 EOF
   sudo yum clean all
-  sudo yum makecache fast
+  sudo yum makecache
   sudo yum install -y devtoolset-"${1:-11}"
   source /opt/rh/devtoolset-"${1:-11}"/enable
   echo ". /opt/rh/devtoolset-${1:-11}/enable" >> ~/.bash_profile
