@@ -13,10 +13,6 @@ from somacore import ExperimentAxisQuery, AxisQuery
 import tiledbsoma
 from tiledbsoma import Experiment, Measurement
 from tiledbsoma.stats import tiledbsoma_stats_as_py as stats
-<<<<<<< HEAD
-
-=======
->>>>>>> 8a551a62b3b5bc2432e20c1c8d97383444c5ef2d
 
 def get_datasets_df(census, collection_id=COLLECTION_ID, profile=None, sort_values=None) -> pd.DataFrame:
     with stats.collect(profile) if profile else nullcontext():
