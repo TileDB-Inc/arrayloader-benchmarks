@@ -52,26 +52,6 @@ if [ -n "$host" ]; then
     echo "export host=$host" >> ~/.bash_profile
 fi
 
-# Install more recent GCC (TileDB-SOMA build seems to require ≥11, definitely >8, instance comes with 7.3.1)
-# install_devtools() {
-#     # Adapted from https://stackoverflow.com/a/66376026/23555888
-#     local v="${1:-11}"
-#     sudo yum-config-manager --add-repo http://mirror.centos.org/centos/7/sclo/x86_64/rh/
-#     sudo yum install -y wget
-
-#     fortran=libgfortran5-8.3.1-2.1.1.el7.x86_64.rpm
-#     wget http://mirror.centos.org/centos/7/os/x86_64/Packages/$fortran
-#     sudo yum install $fortran -y
-#     rm $fortran
-
-#     sudo yum install -y devtoolset-$v --nogpgcheck
-#     local enable=/opt/rh/devtoolset-$v/enable
-#     . "$enable"
-#     echo >> ~/.bash_profile
-#     echo "# Use GCC $v" >> ~/.bash_profile
-#     echo ". \"$enable\"" >> ~/.bash_profile
-#     which -a gcc
-# }
 install_devtools() {
     local want=${1:-11}
     . /etc/os-release
@@ -84,10 +64,8 @@ install_devtools() {
             export CC=gcc${want}  CXX=g++${want}  FC=gfortran${want}
         fi
 
-        echo "$PRETTY_NAME"
     fi
 
-    echo
     echo ">> Final compiler set:"
     echo "GCC VERSION BELOW"
     gcc --version
