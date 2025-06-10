@@ -12,7 +12,7 @@ from benchmarks import COLLECTION_ID
 from somacore import ExperimentAxisQuery, AxisQuery
 import tiledbsoma
 from tiledbsoma import Experiment, Measurement
-from tiledbsoma.stats import stats
+from tiledbsoma.stats import tiledbsoma_stats_as_py as stats
 
 
 def get_datasets_df(census, collection_id=COLLECTION_ID, profile=None, sort_values=None) -> pd.DataFrame:
