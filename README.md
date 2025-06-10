@@ -33,7 +33,7 @@ pip install \
 
 See also [init-instance.sh] for initial node setup commands:
 ```bash
-. <(curl https://raw.githubusercontent.com/ryan-williams/arrayloader-benchmarks/main/notebooks/init-instance.sh)
+. <(curl https://raw.githubusercontent.com/TileDb-Inc/arrayloader-benchmarks/2025_profiling/notebooks/init-instance.sh)
 ```
 
 ## Streaming+Slicing from Census
