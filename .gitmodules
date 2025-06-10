@@ -3,4 +3,4 @@
 	url = https://github.com/single-cell-data/TileDB-SOMA
 [submodule "cellxgene-census"]
 	path = cellxgene-census
-	url = https://github.com/chanzuckerberg/cellxgene-census
+	url = https://github.com/AaditSaluja/cellxgene-census
