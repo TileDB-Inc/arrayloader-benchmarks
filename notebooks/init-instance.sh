@@ -64,10 +64,8 @@ install_devtools() {
             export CC=gcc${want}  CXX=g++${want}  FC=gfortran${want}
         fi
 
-        echo "$PRETTY_NAME"
     fi
 
-    echo
     echo ">> Final compiler set:"
     echo "GCC VERSION BELOW"
     gcc --version
