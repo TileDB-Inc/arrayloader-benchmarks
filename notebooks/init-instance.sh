@@ -53,24 +53,28 @@ if [ -n "$host" ]; then
 fi
 
 install_devtools() {
-    local want=${1:-11}
+    local want=${1:-14}
     . /etc/os-release
+
     if [[ $NAME == "Amazon Linux" && $VERSION_ID == 2023* ]]; then
         echo ">> Detected Amazon Linux 2023"
         sudo dnf -y groupinstall "Development Tools"
-        # Install newer side‑by‑side compilers if requested
-        if [[ $want != 11 ]]; then
-            sudo dnf -y install gcc${want} gcc${want}-c++ gcc${want}-gfortran
-            export CC=gcc${want}  CXX=g++${want}  FC=gfortran${want}
-        fi
 
+        if [[ $want != 11 ]]; then
+            sudo dnf -y install \
+               gcc${want} gcc${want}-c++ gcc${want}-gfortran \
+               libstdc++-devel
+            export CC=/usr/bin/gcc-${want}
+            export CXX=/usr/bin/g++-${want}
+            export FC=/usr/bin/gfortran-${want}
+        fi
     fi
 
     echo ">> Final compiler set:"
-    echo "GCC VERSION BELOW"
     gcc --version
     which -a gcc || true
 }
+
 
 
 if [ -n "$devtools" ]; then
