@@ -136,7 +136,7 @@ fi
 
 # Clone this repo
 # ssh-keyscan -t ecdsa github.com >> .ssh/known_hosts
-git clone -b "$branch" --recurse-submodules https://github.com/ryan-williams/arrayloader-benchmarks.git
+git clone -b "$branch" --recurse-submodules https://github.com/TileDB-Inc/arrayloader-benchmarks.git
 cd arrayloader-benchmarks
 echo "cd ~/arrayloader-benchmarks" >> ~/.bash_profile
 
