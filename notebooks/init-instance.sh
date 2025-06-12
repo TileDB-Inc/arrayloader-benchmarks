@@ -145,11 +145,11 @@ env=arrayloader-benchmarks
 conda env update -n $env -f environment.yml --solver libmamba
 conda activate $env
 echo "conda activate $env" >> ~/.bash_profile
-# conda install -y -c conda-forge tiledb-py
 conda env list
 
 # Install this library (including editable tiledb-soma and cellxgene_census)
 pip install -e . -e cellxgene-census/api/python/cellxgene_census -e tiledb-soma/apis/python
+pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu117 # Pytorch with Cuda wheels for py 3.11
 
 if [ -n "$docker" ]; then
     sudo yum install -y docker
